@@ -14,7 +14,7 @@ def init_firebase_app() -> None:
 
 
 def verify_firebase_token(id_token: str) -> dict:
-    return auth.verify_id_token(id_token)
+    return auth.verify_id_token(id_token, check_revoked=True)
 
 
 def revoke_firebase_tokens(uid: str) -> None:
