@@ -100,9 +100,15 @@
    BASE STYLES
 ============================================================================ */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
+  }
+
+  /* Aplicar color de borde por defecto excepto en elementos de tabla */
+  *:not(table):not(thead):not(tbody):not(tfoot):not(tr):not(th):not(td) {
+    @apply outline-ring/50;
   }
 
   body {
