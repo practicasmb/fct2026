@@ -18,3 +18,15 @@ export {
   DialogDescriptionComponent,
 } from './dialog/dialog';
 export { ToastComponent, ToastService, type Toast } from './toast/toast';
+
+// Tabla
+export {
+  TableComponent,
+  TableHeaderComponent,
+  TableBodyComponent,
+  TableFooterComponent,
+  TableRowComponent,
+  TableHeadComponent,
+  TableCellComponent,
+  TableCaptionComponent,
+} from './table/table.component';
