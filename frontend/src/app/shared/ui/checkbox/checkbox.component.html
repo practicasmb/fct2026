@@ -1,0 +1,22 @@
+<div class="flex items-center gap-2">
+  <p-checkbox
+    [inputId]="inputId()"
+    [binary]="true"
+    [ngModel]="value()"
+    (ngModelChange)="onInput($event)"
+    [disabled]="disabled()"
+    [invalid]="invalid()"
+    [indeterminate]="indeterminate()"
+    [variant]="variant()"
+    [size]="resolvedSize()"
+  />
+  @if (label()) {
+    <label
+      [for]="inputId()"
+      class="text-style-label cursor-pointer select-none"
+      [class.opacity-50]="disabled()"
+    >
+      {{ label() }}
+    </label>
+  }
+</div>

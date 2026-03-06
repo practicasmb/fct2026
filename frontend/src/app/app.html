@@ -1,0 +1,193 @@
+<div class="erp-shell">
+  <div class="erp-main" style="margin-left: 0">
+    <header class="erp-topbar">
+      <span class="text-style-section-title">UI Components — Full Demo</span>
+    </header>
+
+    <main class="erp-content max-w-4xl mx-auto">
+
+      <!-- ─────────────────────────────────────────
+           BUTTONS
+      ───────────────────────────────────────── -->
+      <section class="card p-6 mb-6">
+        <div class="section-header">
+          <h2 class="section-header__title">Button — Variants</h2>
+        </div>
+        <div class="flex flex-wrap gap-3 mb-4">
+          <ui-button label="Default"     variant="default"     />
+          <ui-button label="Secondary"   variant="secondary"   />
+          <ui-button label="Destructive" variant="destructive" />
+          <ui-button label="Outline"     variant="outline"     />
+          <ui-button label="Ghost"       variant="ghost"       />
+          <ui-button label="Link"        variant="link"        />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Button — Outlined</h2>
+        </div>
+        <div class="flex flex-wrap gap-3 mb-4">
+          <ui-button label="Outline"      variant="outline"     />
+          <ui-button label="Outline sm"   variant="outline"     size="sm" />
+          <ui-button label="Outline lg"   variant="outline"     size="lg" />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Button — Sizes</h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+          <ui-button label="Large"   size="lg" />
+          <ui-button label="Default" size="default" />
+          <ui-button label="Small"   size="sm" />
+          <ui-button icon="pi pi-plus" size="icon" />
+          <ui-button icon="pi pi-plus" size="icon" [rounded]="true" />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Button — Icons</h2>
+        </div>
+        <div class="flex flex-wrap gap-3 mb-4">
+          <ui-button label="Left icon"  icon="pi pi-plus"     iconPos="left"  />
+          <ui-button label="Right icon" icon="pi pi-arrow-right" iconPos="right" />
+          <ui-button icon="pi pi-pencil" size="icon" variant="ghost" />
+          <ui-button icon="pi pi-eye"    size="icon" variant="ghost" />
+          <ui-button icon="pi pi-trash"  size="icon" variant="destructive" />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Button — States</h2>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <ui-button label="Normal"   />
+          <ui-button label="Loading"  [loading]="true"  />
+          <ui-button label="Disabled" [disabled]="true" />
+          <ui-button label="Loading secondary" variant="secondary" [loading]="true" />
+          <ui-button label="Disabled outline"  variant="outline"   [disabled]="true" />
+        </div>
+      </section>
+
+      <!-- ─────────────────────────────────────────
+           BADGES
+      ───────────────────────────────────────── -->
+      <section class="card p-6 mb-6">
+        <div class="section-header">
+          <h2 class="section-header__title">Badge — Variants</h2>
+        </div>
+        <div class="flex flex-wrap gap-3 mb-4">
+          <ui-badge value="Default"   variant="default"  />
+          <ui-badge value="Info"      variant="info"     />
+          <ui-badge value="Success"   variant="success"  />
+          <ui-badge value="Warning"   variant="warning"  />
+          <ui-badge value="Danger"    variant="danger"   />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Badge — Sizes</h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+          <ui-badge value="Small"   variant="info"    size="sm"      />
+          <ui-badge value="Default" variant="success" size="default" />
+          <ui-badge value="Large"   variant="warning" size="lg"      />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Badge — Domain statuses</h2>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <ui-badge value="Pendiente"   variant="warning" />
+          <ui-badge value="Aprobado"    variant="success" />
+          <ui-badge value="En Proceso"  variant="info"    />
+          <ui-badge value="Recibido"    variant="default" />
+          <ui-badge value="Cancelado"   variant="danger"  />
+          <ui-badge value="Texto largo de prueba" variant="info" />
+        </div>
+      </section>
+
+      <!-- ─────────────────────────────────────────
+           CHECKBOXES
+      ───────────────────────────────────────── -->
+      <section class="card p-6 mb-6">
+        <div class="section-header">
+          <h2 class="section-header__title">Checkbox — Variants</h2>
+        </div>
+        <div class="flex flex-wrap gap-6 mb-4">
+          <ui-checkbox label="Outlined (default)" variant="outlined" />
+          <ui-checkbox label="Filled"             variant="filled"   />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Checkbox — Sizes</h2>
+        </div>
+        <div class="flex flex-wrap gap-6 mb-4">
+          <ui-checkbox label="Small"   size="sm"      />
+          <ui-checkbox label="Default" size="default" />
+          <ui-checkbox label="Large"   size="lg"      />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Checkbox — States</h2>
+        </div>
+        <div class="flex flex-wrap gap-6 mb-4">
+          <ui-checkbox label="Unchecked"     />
+          <ui-checkbox label="Checked"       [checked]="true"        />
+          <ui-checkbox label="Disabled"      [disabled]="true"       />
+          <ui-checkbox label="Disabled checked" [checked]="true" [disabled]="true" />
+          <ui-checkbox label="Invalid"       [invalid]="true"        />
+          <ui-checkbox label="Indeterminate" [indeterminate]="true"  />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Checkbox — Without label</h2>
+        </div>
+        <div class="flex gap-4">
+          <ui-checkbox />
+          <ui-checkbox [checked]="true" />
+          <ui-checkbox variant="filled" />
+        </div>
+      </section>
+
+      <!-- ─────────────────────────────────────────
+           DIALOGS
+      ───────────────────────────────────────── -->
+      <section class="card p-6 mb-6">
+        <div class="section-header">
+          <h2 class="section-header__title">Dialog — Variants</h2>
+        </div>
+        <div class="flex flex-wrap gap-3 mb-4">
+          <ui-button label="Default" (clicked)="openDialog('default', 'default')" />
+          <ui-button label="Info"    variant="secondary"   (clicked)="openDialog('info', 'default')" />
+          <ui-button label="Success" (clicked)="openDialog('success', 'default')" />
+          <ui-button label="Warning" (clicked)="openDialog('warning', 'default')" />
+          <ui-button label="Danger"  variant="destructive" (clicked)="openDialog('danger', 'default')" />
+        </div>
+
+        <div class="section-header mt-4">
+          <h2 class="section-header__title">Dialog — Sizes</h2>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <ui-button label="Small"   size="sm" (clicked)="openDialog('default', 'sm')"      />
+          <ui-button label="Default" size="sm" (clicked)="openDialog('default', 'default')" />
+          <ui-button label="Large"   size="sm" (clicked)="openDialog('default', 'lg')"      />
+          <ui-button label="XL"      size="sm" (clicked)="openDialog('default', 'xl')"      />
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- Dialog instance — shared across all triggers -->
+<ui-dialog
+  [(visible)]="dialogVisible"
+  [header]="'Dialog — ' + dialogVariant() + ' / ' + dialogSize()"
+  [variant]="dialogVariant()"
+  [size]="dialogSize()"
+  confirmLabel="Confirm"
+  cancelLabel="Cancel"
+  (confirmed)="dialogVisible.set(false)"
+  (cancelled)="dialogVisible.set(false)"
+>
+  <p class="text-style-label" style="color: var(--p-surface-600)">
+    Dialog content goes here. You can place forms, tables or any other
+    UI inside the default slot.
+  </p>
+</ui-dialog>
