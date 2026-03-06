@@ -58,6 +58,12 @@ from modules.admin.infrastructure.repos.department_repository import (
 )
 from modules.admin.infrastructure.repos.user_repository import UserRepository
 from modules.auth.application.login_use_case import LoginUseCase
+from modules.suppliers.application.download_supplier_template_use_case import (
+    DownloadSupplierTemplateUseCase,
+)
+from modules.suppliers.domain.interfaces.use_cases.i_download_supplier_template_use_case import (
+    IDownloadSupplierTemplateUseCase,
+)
 from modules.auth.application.logout_use_case import LogoutUseCase
 from modules.auth.domain.interfaces.use_cases.i_login_use_case import ILoginUseCase
 from modules.auth.domain.interfaces.use_cases.i_logout_use_case import ILogoutUseCase
@@ -133,3 +139,7 @@ async def get_set_user_active_use_case(
     db: AsyncSession = Depends(get_db),
 ) -> ISetUserActiveUseCase:
     return SetUserActiveUseCase(UserRepository(db))
+
+
+def get_download_supplier_template_use_case() -> IDownloadSupplierTemplateUseCase:
+    return DownloadSupplierTemplateUseCase()
