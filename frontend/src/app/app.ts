@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { ButtonComponent, DialogComponent, BadgeComponent, CheckboxComponent } from '@shared/ui';
 import type { DialogVariant, DialogSize } from '@shared/ui';
 
@@ -6,10 +7,11 @@ import type { DialogVariant, DialogSize } from '@shared/ui';
   selector: 'app-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonComponent, DialogComponent, BadgeComponent, CheckboxComponent],
+  imports: [RouterOutlet, ButtonComponent ],
   templateUrl: './app.html',
 })
 export class AppComponent {
+  constructor(private readonly router: Router) {}
   readonly dialogVisible = signal(false);
   readonly dialogVariant = signal<DialogVariant>('default');
   readonly dialogSize    = signal<DialogSize>('default');
@@ -18,5 +20,8 @@ export class AppComponent {
     this.dialogVariant.set(variant);
     this.dialogSize.set(size);
     this.dialogVisible.set(true);
+  }
+  goToTerms(): void {
+    this.router.navigate(['/legal/terms']);
   }
 }
