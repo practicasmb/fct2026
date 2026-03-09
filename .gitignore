@@ -1,3 +1,7 @@
+# Root level
+frontend/node_modules/
+.env
+.DS_Store
 # Claude Code (asistente IA)
 .claude/
 
