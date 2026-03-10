@@ -62,6 +62,21 @@ from modules.auth.application.logout_use_case import LogoutUseCase
 from modules.auth.domain.interfaces.use_cases.i_login_use_case import ILoginUseCase
 from modules.auth.domain.interfaces.use_cases.i_logout_use_case import ILogoutUseCase
 from modules.auth.infrastructure.repos.auth_repository import AuthRepository
+from modules.suppliers.application.download_supplier_template_use_case import (
+    DownloadSupplierTemplateUseCase,
+)
+from modules.suppliers.application.import_suppliers_use_case import (
+    ImportSuppliersUseCase,
+)
+from modules.suppliers.domain.interfaces.use_cases.i_download_supplier_template_use_case import (
+    IDownloadSupplierTemplateUseCase,
+)
+from modules.suppliers.domain.interfaces.use_cases.i_import_suppliers_use_case import (
+    IImportSuppliersUseCase,
+)
+from modules.suppliers.infrastructure.repos.supplier_repository import (
+    SupplierRepository,
+)
 from shared.infrastructure.database.connection import get_db
 
 
@@ -133,3 +148,13 @@ async def get_set_user_active_use_case(
     db: AsyncSession = Depends(get_db),
 ) -> ISetUserActiveUseCase:
     return SetUserActiveUseCase(UserRepository(db))
+
+
+def get_download_supplier_template_use_case() -> IDownloadSupplierTemplateUseCase:
+    return DownloadSupplierTemplateUseCase()
+
+
+async def get_import_suppliers_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> IImportSuppliersUseCase:
+    return ImportSuppliersUseCase(SupplierRepository(db))
