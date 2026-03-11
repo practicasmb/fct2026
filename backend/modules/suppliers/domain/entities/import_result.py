@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class ImportError:
+class ImportRowError:
     row: int
     reason: str
 
@@ -11,4 +11,4 @@ class ImportError:
 class ImportResult:
     total: int
     created: int
-    errors: list[ImportError]
+    errors: list[ImportRowError]
