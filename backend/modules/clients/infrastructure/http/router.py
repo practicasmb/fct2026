@@ -7,7 +7,7 @@ from composition.dependencies import (
     get_set_client_active_use_case,
     get_update_client_use_case,
 )
-from composition.security import get_current_user, require_ventas_manager_or_admin
+from composition.security import get_current_user, require_sales_manager_or_admin
 from modules.clients.domain.entities.client import Client
 from modules.clients.domain.interfaces.use_cases.i_create_client_use_case import (
     ICreateClientUseCase,
@@ -86,7 +86,7 @@ async def get_client(
 async def create_client(
     body: CreateClientDTO,
     use_case: ICreateClientUseCase = Depends(get_create_client_use_case),
-    _: dict = Depends(require_ventas_manager_or_admin),
+    _: dict = Depends(require_sales_manager_or_admin),
 ):
     """Create a new client.
 
@@ -111,7 +111,7 @@ async def update_client(
     client_id: int,
     body: UpdateClientDTO,
     use_case: IUpdateClientUseCase = Depends(get_update_client_use_case),
-    _: dict = Depends(require_ventas_manager_or_admin),
+    _: dict = Depends(require_sales_manager_or_admin),
 ):
     """Update the mutable fields of an existing client.
 
@@ -136,7 +136,7 @@ async def set_client_active(
     client_id: int,
     body: SetClientActiveDTO,
     use_case: ISetClientActiveUseCase = Depends(get_set_client_active_use_case),
-    _: dict = Depends(require_ventas_manager_or_admin),
+    _: dict = Depends(require_sales_manager_or_admin),
 ):
     """Activate or deactivate a client (logical soft-delete).
 
