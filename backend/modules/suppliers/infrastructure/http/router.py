@@ -16,7 +16,7 @@ ALLOWED_ROLES = {"Administrator", "Manager"}
 
 
 @router.get("/template")
-async def download_template(
+def download_template(
     current_user: UserSession = Depends(get_current_user),
     use_case: IDownloadSupplierTemplateUseCase = Depends(
         get_download_supplier_template_use_case
