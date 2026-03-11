@@ -111,4 +111,4 @@ async def test_import_tax_id_normalized_to_upper():
     result = await ImportSuppliersUseCase(repo).execute(content)
     assert result.created == 1
     call_args = repo.bulk_create.call_args[0][0]
-    assert call_args[0]["tax_id"] == "B12345674"
+    assert call_args[0].tax_id == "B12345674"
