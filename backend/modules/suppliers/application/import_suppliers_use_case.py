@@ -4,8 +4,8 @@ from io import BytesIO
 from openpyxl import load_workbook
 
 from modules.suppliers.domain.entities.import_result import (
-    ImportError,
     ImportResult,
+    ImportRowError,
 )
 from modules.suppliers.domain.entities.supplier import Supplier
 from modules.suppliers.domain.interfaces.repositories.i_supplier_repository import (
@@ -35,80 +35,88 @@ class ImportSuppliersUseCase(IImportSuppliersUseCase):
         self._repo = repo
 
     async def execute(self, file_content: bytes) -> ImportResult:
-        wb = load_workbook(BytesIO(file_content), read_only=True, data_only=True)
-        ws = wb.active
-        rows = list(ws.iter_rows(min_row=1, values_only=True))
-
-        if len(rows) < 2:
+        try:
+            wb = load_workbook(BytesIO(file_content), read_only=True, data_only=True)
+        except Exception:
             return ImportResult(
                 total=0,
                 created=0,
-                errors=[
-                    ImportError(row=1, reason="File is empty or has no data rows")
-                ],
+                errors=[ImportRowError(row=1, reason="Invalid or corrupted file")],
             )
 
-        headers = [str(h).strip() if h else "" for h in rows[0]]
-        if headers != EXPECTED_HEADERS:
-            return ImportResult(
-                total=0,
-                created=0,
-                errors=[
-                    ImportError(
-                        row=1, reason="Invalid headers. Use the provided template"
-                    )
-                ],
-            )
+        try:
+            ws = wb.active
+            row_iter = ws.iter_rows(min_row=1, values_only=True)
 
-        data_rows = rows[1:]
-        errors: list[ImportError] = []
-        parsed: list[Supplier] = []
-        seen_tax_ids: set[str] = set()
+            header_row = next(row_iter, None)
+            if header_row is None:
+                return ImportResult(
+                    total=0,
+                    created=0,
+                    errors=[ImportRowError(row=1, reason="File is empty or has no data rows")],
+                )
 
-        for i, row in enumerate(data_rows, start=2):
-            row_errors = self._validate_row(row, i, seen_tax_ids)
-            if row_errors:
-                errors.extend(row_errors)
-            else:
-                fields = {
-                    db_field: str(row[col_idx]).strip()
-                    for col_idx, db_field in enumerate(COLUMN_MAP.values())
-                }
-                parsed.append(Supplier(**fields))
-                seen_tax_ids.add(fields["tax_id"].upper())
+            headers = [str(h).strip() if h else "" for h in header_row]
+            header_prefix = headers[: len(EXPECTED_HEADERS)]
+            extra_headers = headers[len(EXPECTED_HEADERS) :]
+            if header_prefix != EXPECTED_HEADERS or any(h for h in extra_headers):
+                return ImportResult(
+                    total=0,
+                    created=0,
+                    errors=[ImportRowError(row=1, reason="Invalid headers. Use the provided template")],
+                )
 
-        if parsed and not errors:
-            existing = await self._repo.get_existing_tax_ids(
-                [s.tax_id for s in parsed]
-            )
-            for i, row in enumerate(data_rows, start=2):
-                tax_id = str(row[1]).strip().upper() if row[1] else ""
-                if tax_id in existing:
-                    errors.append(
-                        ImportError(
-                            row=i,
-                            reason=f"CIF {tax_id} already exists in database",
+            errors: list[ImportRowError] = []
+            parsed: list[Supplier] = []
+            seen_tax_ids: set[str] = set()
+            total = 0
+
+            for i, row in enumerate(row_iter, start=2):
+                total += 1
+                row_errors = self._validate_row(row, i, seen_tax_ids)
+                if row_errors:
+                    errors.extend(row_errors)
+                else:
+                    fields = {
+                        db_field: str(row[col_idx]).strip()
+                        for col_idx, db_field in enumerate(COLUMN_MAP.values())
+                    }
+                    fields["tax_id"] = fields["tax_id"].upper()
+                    parsed.append(Supplier(**fields))
+                    seen_tax_ids.add(fields["tax_id"])
+
+            if parsed and not errors:
+                existing = await self._repo.get_existing_tax_ids(
+                    [s.tax_id for s in parsed]
+                )
+                for s in parsed:
+                    if s.tax_id in existing:
+                        errors.append(
+                            ImportRowError(
+                                row=0,
+                                reason=f"CIF {s.tax_id} already exists in database",
+                            )
                         )
-                    )
 
-        total = len(data_rows)
-        if errors:
-            return ImportResult(total=total, created=0, errors=errors)
+            if errors:
+                return ImportResult(total=total, created=0, errors=errors)
 
-        created = await self._repo.bulk_create(parsed)
-        return ImportResult(total=total, created=created, errors=[])
+            created = await self._repo.bulk_create(parsed)
+            return ImportResult(total=total, created=created, errors=[])
+        finally:
+            wb.close()
 
     def _validate_row(
         self, row: tuple, row_num: int, seen_tax_ids: set[str]
-    ) -> list[ImportError]:
-        errors: list[ImportError] = []
+    ) -> list[ImportRowError]:
+        errors: list[ImportRowError] = []
         field_names = list(COLUMN_MAP.keys())
 
         for col_idx, header in enumerate(field_names):
             value = row[col_idx] if col_idx < len(row) else None
             if value is None or str(value).strip() == "":
                 errors.append(
-                    ImportError(row=row_num, reason=f"Field '{header}' is required")
+                    ImportRowError(row=row_num, reason=f"Field '{header}' is required")
                 )
 
         if errors:
@@ -118,12 +126,12 @@ class ImportSuppliersUseCase(IImportSuppliersUseCase):
         email = str(row[7]).strip()
 
         if not CIF_REGEX.match(tax_id):
-            errors.append(ImportError(row=row_num, reason="Invalid CIF format"))
+            errors.append(ImportRowError(row=row_num, reason="Invalid CIF format"))
 
         if not EMAIL_REGEX.match(email):
-            errors.append(ImportError(row=row_num, reason="Invalid email format"))
+            errors.append(ImportRowError(row=row_num, reason="Invalid email format"))
 
         if tax_id in seen_tax_ids:
-            errors.append(ImportError(row=row_num, reason="Duplicate CIF in file"))
+            errors.append(ImportRowError(row=row_num, reason="Duplicate CIF in file"))
 
         return errors
