@@ -35,6 +35,6 @@ class DownloadSupplierTemplateUseCase(IDownloadSupplierTemplateUseCase):
         ws.title = "Proveedores"
         ws.append(list(self.HEADERS))
         ws.append(list(self.EXAMPLE))
-        buffer = BytesIO()
-        wb.save(buffer)
-        return buffer.getvalue()
+        with BytesIO() as buffer:
+            wb.save(buffer)
+            return buffer.getvalue()
