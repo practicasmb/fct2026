@@ -52,8 +52,8 @@ from modules.admin.infrastructure.http.schemas import (
     UpdateUserDTO,
     UserDTO,
 )
-from shared.infrastructure.http.paginated_response import PaginatedResponse
 from shared.domain.entities.user import User
+from shared.infrastructure.http.paginated_response import PaginatedResponse
 
 router = APIRouter(prefix="/admin", tags=["Admin - Departments"])
 
