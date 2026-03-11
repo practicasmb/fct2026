@@ -24,7 +24,7 @@ class SupplierRepository(ISupplierRepository):
 
         offset = (page - 1) * page_size
         result = await self._db.execute(
-            select(Supplier).order_by(Supplier.name).limit(page_size).offset(offset)
+            select(Supplier).order_by(Supplier.name, Supplier.supplier_id).limit(page_size).offset(offset)
         )
         items = list(result.scalars().all())
 
