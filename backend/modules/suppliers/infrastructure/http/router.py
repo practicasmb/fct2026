@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, Query, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Query, Response, UploadFile
 from fastapi.responses import StreamingResponse
 
 from composition.dependencies import (
@@ -82,7 +82,7 @@ def _to_supplier_detail_dto(
 
 
 @router.get("/template")
-async def download_template(
+def download_template(
     _: UserSession = Depends(require_purchases_manager_or_admin),
     use_case: IDownloadSupplierTemplateUseCase = Depends(
         get_download_supplier_template_use_case
@@ -100,7 +100,7 @@ async def download_template(
 
 @router.post("/import", response_model=ImportResultDTO)
 async def import_suppliers(
-    file: UploadFile,
+    file: UploadFile = File(...),
     _: UserSession = Depends(require_purchases_manager_or_admin),
     use_case: IImportSuppliersUseCase = Depends(get_import_suppliers_use_case),
 ):
