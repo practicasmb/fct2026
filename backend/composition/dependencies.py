@@ -58,6 +58,10 @@ from modules.admin.infrastructure.repos.department_repository import (
 )
 from modules.admin.infrastructure.repos.user_repository import UserRepository
 from modules.auth.application.login_use_case import LoginUseCase
+from modules.auth.application.logout_use_case import LogoutUseCase
+from modules.auth.domain.interfaces.use_cases.i_login_use_case import ILoginUseCase
+from modules.auth.domain.interfaces.use_cases.i_logout_use_case import ILogoutUseCase
+from modules.auth.infrastructure.repos.auth_repository import AuthRepository
 from modules.suppliers.application.download_supplier_template_use_case import (
     DownloadSupplierTemplateUseCase,
 )
