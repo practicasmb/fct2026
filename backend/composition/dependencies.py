@@ -35,6 +35,10 @@ from modules.admin.infrastructure.repos.department_repository import (
     DepartmentRepository,
 )
 from modules.auth.application.login_use_case import LoginUseCase
+from modules.auth.application.logout_use_case import LogoutUseCase
+from modules.auth.domain.interfaces.use_cases.i_login_use_case import ILoginUseCase
+from modules.auth.domain.interfaces.use_cases.i_logout_use_case import ILogoutUseCase
+from modules.auth.infrastructure.repos.auth_repository import AuthRepository
 from modules.suppliers.application.download_supplier_template_use_case import (
     DownloadSupplierTemplateUseCase,
 )
@@ -50,10 +54,6 @@ from modules.suppliers.domain.interfaces.use_cases.i_import_suppliers_use_case i
 from modules.suppliers.infrastructure.repos.supplier_repository import (
     SupplierRepository,
 )
-from modules.auth.application.logout_use_case import LogoutUseCase
-from modules.auth.domain.interfaces.use_cases.i_login_use_case import ILoginUseCase
-from modules.auth.domain.interfaces.use_cases.i_logout_use_case import ILogoutUseCase
-from modules.auth.infrastructure.repos.auth_repository import AuthRepository
 from shared.infrastructure.database.connection import get_db
 
 
