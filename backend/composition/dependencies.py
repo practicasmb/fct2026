@@ -62,6 +62,29 @@ from modules.auth.application.logout_use_case import LogoutUseCase
 from modules.auth.domain.interfaces.use_cases.i_login_use_case import ILoginUseCase
 from modules.auth.domain.interfaces.use_cases.i_logout_use_case import ILogoutUseCase
 from modules.auth.infrastructure.repos.auth_repository import AuthRepository
+from modules.clients.application.create_client_use_case import CreateClientUseCase
+from modules.clients.application.get_client_use_case import GetClientUseCase
+from modules.clients.application.list_clients_use_case import ListClientsUseCase
+from modules.clients.application.set_client_active_use_case import (
+    SetClientActiveUseCase,
+)
+from modules.clients.application.update_client_use_case import UpdateClientUseCase
+from modules.clients.domain.interfaces.use_cases.i_create_client_use_case import (
+    ICreateClientUseCase,
+)
+from modules.clients.domain.interfaces.use_cases.i_get_client_use_case import (
+    IGetClientUseCase,
+)
+from modules.clients.domain.interfaces.use_cases.i_list_clients_use_case import (
+    IListClientsUseCase,
+)
+from modules.clients.domain.interfaces.use_cases.i_set_client_active_use_case import (
+    ISetClientActiveUseCase,
+)
+from modules.clients.domain.interfaces.use_cases.i_update_client_use_case import (
+    IUpdateClientUseCase,
+)
+from modules.clients.infrastructure.repos.client_repository import ClientRepository
 from modules.suppliers.application.download_supplier_template_use_case import (
     DownloadSupplierTemplateUseCase,
 )
@@ -162,3 +185,33 @@ async def get_import_suppliers_use_case(
     db: AsyncSession = Depends(get_db),
 ) -> IImportSuppliersUseCase:
     return ImportSuppliersUseCase(SupplierRepository(db))
+
+
+async def get_list_clients_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> IListClientsUseCase:
+    return ListClientsUseCase(ClientRepository(db))
+
+
+async def get_get_client_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> IGetClientUseCase:
+    return GetClientUseCase(ClientRepository(db))
+
+
+async def get_create_client_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> ICreateClientUseCase:
+    return CreateClientUseCase(ClientRepository(db))
+
+
+async def get_update_client_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> IUpdateClientUseCase:
+    return UpdateClientUseCase(ClientRepository(db))
+
+
+async def get_set_client_active_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> ISetClientActiveUseCase:
+    return SetClientActiveUseCase(ClientRepository(db))
