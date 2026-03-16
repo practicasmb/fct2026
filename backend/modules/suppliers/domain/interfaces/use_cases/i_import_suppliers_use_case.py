@@ -5,5 +5,4 @@ from modules.suppliers.domain.entities.import_result import ImportResult
 
 class IImportSuppliersUseCase(ABC):
     @abstractmethod
-    async def execute(self, file_content: bytes) -> ImportResult:
-        raise NotImplementedError
+    async def execute(self, file_content: bytes) -> ImportResult: ...
