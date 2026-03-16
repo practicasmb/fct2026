@@ -67,29 +67,36 @@ export class SuppliersStore {
     })),
   );
 
-  // Proveedores filtrados para UI
+  // Proveedores filtrados para UI (solo para display, no para paginación)
   readonly filteredProviders = computed(() => {
-    let filtered = [...this.providers()];
+    // En modo lazy, los datos ya vienen filtrados del servidor
+    // Solo aplicamos filtros locales si no estamos en modo lazy o para búsqueda rápida
+    if (this.searchQuery() || this.statusFilter()) {
+      let filtered = [...this.providers()];
+      
+      // Filtro por búsqueda (si el backend no lo soporta)
+      const search = this.searchQuery().toLowerCase();
+      if (search) {
+        filtered = filtered.filter(
+          (provider) =>
+            provider.name.toLowerCase().includes(search) ||
+            provider.email.toLowerCase().includes(search) ||
+            provider.taxId.toLowerCase().includes(search) ||
+            (provider.contactPerson?.toLowerCase().includes(search) ?? false),
+        );
+      }
 
-    // Filtro por búsqueda
-    const search = this.searchQuery().toLowerCase();
-    if (search) {
-      filtered = filtered.filter(
-        (provider) =>
-          provider.name.toLowerCase().includes(search) ||
-          provider.email.toLowerCase().includes(search) ||
-          provider.taxId.toLowerCase().includes(search) ||
-          (provider.contactPerson?.toLowerCase().includes(search) ?? false),
-      );
+      // Filtro por estado (si el backend no lo soporta)
+      const statusFilter = this.statusFilter();
+      if (statusFilter) {
+        filtered = filtered.filter((provider) => provider.status === statusFilter);
+      }
+
+      return filtered;
     }
-
-    // Filtro por estado
-    const statusFilter = this.statusFilter();
-    if (statusFilter) {
-      filtered = filtered.filter((provider) => provider.status === statusFilter);
-    }
-
-    return filtered;
+    
+    // Si no hay filtros locales, devolver los datos del servidor
+    return this.providers();
   });
 
   // ── Error mapping (Domain → UI messages) ───────────────────────────────────
@@ -268,9 +275,18 @@ export class SuppliersStore {
   }
 
   onPageChange(event: PageEvent): void {
-    this.page.set((event.page ?? 0) + 1);
-    this.pageSize.set(event.rows ?? 20);
-    this.loadProviders(event);
+    // PrimeNG pagination emits `first` y `rows`, y opcionalmente `page`.
+    // Normalizar para mantener consistencia y soportar paginación del lado del servidor.
+    const rows = event.rows ?? this.pageSize();
+    const page = event.page ?? Math.floor((event.first ?? 0) / rows);
+    const first = event.first ?? page * rows;
+
+    // PrimeNG usa base 0 para page, nuestro store usa base 1
+    this.page.set(page + 1);
+    this.pageSize.set(rows);
+    
+    // Cargar datos del servidor con nueva paginación
+    this.loadProviders({ ...event, page: page + 1, first, rows });
   }
 
   // ── Utilidades ───────────────────────────────────────────────────────────
