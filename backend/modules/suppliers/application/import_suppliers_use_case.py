@@ -14,7 +14,12 @@ from modules.suppliers.domain.interfaces.repositories.i_supplier_repository impo
 from modules.suppliers.domain.interfaces.use_cases.i_import_suppliers_use_case import (
     IImportSuppliersUseCase,
 )
-from shared.constants import EMAIL_PATTERN, TAX_ID_PATTERN
+from shared.constants import (
+    EMAIL_PATTERN,
+    PHONE_PATTERN,
+    POSTAL_CODE_PATTERN,
+    TAX_ID_PATTERN,
+)
 
 COLUMN_MAP = {
     "Nombre": "name",
@@ -29,6 +34,16 @@ COLUMN_MAP = {
 EXPECTED_HEADERS = list(COLUMN_MAP.keys())
 CIF_REGEX = re.compile(TAX_ID_PATTERN)
 EMAIL_REGEX = re.compile(EMAIL_PATTERN)
+POSTAL_CODE_REGEX = re.compile(POSTAL_CODE_PATTERN)
+PHONE_REGEX = re.compile(PHONE_PATTERN)
+
+MAX_LENGTHS = {
+    "name": 150,
+    "address": 255,
+    "city": 100,
+    "province": 100,
+    "email": 150,
+}
 
 
 class ImportSuppliersUseCase(IImportSuppliersUseCase):
@@ -120,22 +135,44 @@ class ImportSuppliersUseCase(IImportSuppliersUseCase):
     ) -> list[ImportRowError]:
         errors: list[ImportRowError] = []
         field_names = list(COLUMN_MAP.keys())
+        field_keys = list(COLUMN_MAP.values())
 
         for col_idx, header in enumerate(field_names):
             value = row[col_idx] if col_idx < len(row) else None
-            if value is None or str(value).strip() == "":
+            str_value = str(value).strip() if value is not None else ""
+            if str_value == "":
                 errors.append(
                     ImportRowError(row=row_num, reason=f"Field '{header}' is required")
+                )
+                continue
+
+            field_key = field_keys[col_idx]
+            if field_key in MAX_LENGTHS and len(str_value) > MAX_LENGTHS[field_key]:
+                errors.append(
+                    ImportRowError(
+                        row=row_num,
+                        reason=f"Field '{header}' exceeds maximum length of {MAX_LENGTHS[field_key]}",
+                    )
                 )
 
         if errors:
             return errors
 
         tax_id = str(row[1]).strip().upper()
+        postal_code = str(row[5]).strip()
+        phone = str(row[6]).strip()
         email = str(row[7]).strip()
 
         if not CIF_REGEX.match(tax_id):
             errors.append(ImportRowError(row=row_num, reason="Invalid CIF format"))
+
+        if not POSTAL_CODE_REGEX.match(postal_code):
+            errors.append(
+                ImportRowError(row=row_num, reason="Invalid postal code format")
+            )
+
+        if not PHONE_REGEX.match(phone):
+            errors.append(ImportRowError(row=row_num, reason="Invalid phone format"))
 
         if not EMAIL_REGEX.match(email):
             errors.append(ImportRowError(row=row_num, reason="Invalid email format"))
