@@ -1,17 +1,6 @@
-from typing import Generic, TypeVar
-
 from pydantic import BaseModel, Field
 
 from shared.constants import ROLE_PATTERN
-
-T = TypeVar("T")
-
-
-class PaginatedResponse(BaseModel, Generic[T]):
-    items: list[T]
-    total: int
-    page: int
-    page_size: int
 
 
 class CreateDepartmentDTO(BaseModel):

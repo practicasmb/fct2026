@@ -62,6 +62,39 @@ from modules.auth.application.logout_use_case import LogoutUseCase
 from modules.auth.domain.interfaces.use_cases.i_login_use_case import ILoginUseCase
 from modules.auth.domain.interfaces.use_cases.i_logout_use_case import ILogoutUseCase
 from modules.auth.infrastructure.repos.auth_repository import AuthRepository
+from modules.suppliers.application.download_supplier_template_use_case import (
+    DownloadSupplierTemplateUseCase,
+)
+from modules.suppliers.application.get_supplier_use_case import GetSupplierUseCase
+from modules.suppliers.application.import_suppliers_use_case import (
+    ImportSuppliersUseCase,
+)
+from modules.suppliers.application.list_suppliers_use_case import ListSuppliersUseCase
+from modules.suppliers.application.set_supplier_active_use_case import (
+    SetSupplierActiveUseCase,
+)
+from modules.suppliers.application.update_supplier_use_case import UpdateSupplierUseCase
+from modules.suppliers.domain.interfaces.use_cases.i_download_supplier_template_use_case import (
+    IDownloadSupplierTemplateUseCase,
+)
+from modules.suppliers.domain.interfaces.use_cases.i_get_supplier_use_case import (
+    IGetSupplierUseCase,
+)
+from modules.suppliers.domain.interfaces.use_cases.i_import_suppliers_use_case import (
+    IImportSuppliersUseCase,
+)
+from modules.suppliers.domain.interfaces.use_cases.i_list_suppliers_use_case import (
+    IListSuppliersUseCase,
+)
+from modules.suppliers.domain.interfaces.use_cases.i_set_supplier_active_use_case import (
+    ISetSupplierActiveUseCase,
+)
+from modules.suppliers.domain.interfaces.use_cases.i_update_supplier_use_case import (
+    IUpdateSupplierUseCase,
+)
+from modules.suppliers.infrastructure.repos.supplier_repository import (
+    SupplierRepository,
+)
 from modules.clients.application.create_client_use_case import CreateClientUseCase
 from modules.clients.application.get_client_use_case import GetClientUseCase
 from modules.clients.application.list_clients_use_case import ListClientsUseCase
@@ -187,6 +220,28 @@ async def get_import_suppliers_use_case(
     return ImportSuppliersUseCase(SupplierRepository(db))
 
 
+async def get_list_suppliers_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> IListSuppliersUseCase:
+    return ListSuppliersUseCase(SupplierRepository(db))
+
+
+async def get_get_supplier_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> IGetSupplierUseCase:
+    return GetSupplierUseCase(SupplierRepository(db))
+
+
+async def get_update_supplier_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> IUpdateSupplierUseCase:
+    return UpdateSupplierUseCase(SupplierRepository(db))
+
+
+async def get_set_supplier_active_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> ISetSupplierActiveUseCase:
+    return SetSupplierActiveUseCase(SupplierRepository(db))
 async def get_list_clients_use_case(
     db: AsyncSession = Depends(get_db),
 ) -> IListClientsUseCase:

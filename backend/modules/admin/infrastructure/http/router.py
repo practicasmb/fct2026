@@ -47,13 +47,13 @@ from modules.admin.infrastructure.http.schemas import (
     CreateDepartmentDTO,
     CreateUserDTO,
     DepartmentDTO,
-    PaginatedResponse,
     SetUserActiveDTO,
     UpdateDepartmentDTO,
     UpdateUserDTO,
     UserDTO,
 )
 from shared.domain.entities.user import User
+from shared.infrastructure.http.paginated_response import PaginatedResponse
 
 router = APIRouter(prefix="/admin", tags=["Admin - Departments"])
 

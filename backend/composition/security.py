@@ -74,4 +74,5 @@ def require_department_manager_or_admin(department_name: str):
     return _dependency
 
 
+require_purchases_manager_or_admin = require_department_manager_or_admin("Purchases")
 require_sales_manager_or_admin = require_department_manager_or_admin("Sales")
