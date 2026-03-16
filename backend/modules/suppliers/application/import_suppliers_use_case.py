@@ -14,6 +14,7 @@ from modules.suppliers.domain.interfaces.repositories.i_supplier_repository impo
 from modules.suppliers.domain.interfaces.use_cases.i_import_suppliers_use_case import (
     IImportSuppliersUseCase,
 )
+from shared.constants import EMAIL_PATTERN, TAX_ID_PATTERN
 
 COLUMN_MAP = {
     "Nombre": "name",
@@ -26,8 +27,8 @@ COLUMN_MAP = {
     "Email": "email",
 }
 EXPECTED_HEADERS = list(COLUMN_MAP.keys())
-CIF_REGEX = re.compile(r"^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$")
-EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+CIF_REGEX = re.compile(TAX_ID_PATTERN)
+EMAIL_REGEX = re.compile(EMAIL_PATTERN)
 
 
 class ImportSuppliersUseCase(IImportSuppliersUseCase):
