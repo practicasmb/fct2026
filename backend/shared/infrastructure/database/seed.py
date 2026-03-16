@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.config import settings
@@ -22,4 +23,7 @@ async def seed(session: AsyncSession) -> None:
         is_active=True,
     )
     session.add(admin)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
