@@ -15,6 +15,8 @@ import modules.catalog.domain.entities.category  # noqa: F401
 import modules.catalog.domain.entities.product  # noqa: F401
 import modules.suppliers.domain.entities.supplier  # noqa: F401
 import modules.suppliers.domain.entities.supplier_product  # noqa: F401
+import modules.warehouse.domain.entities.warehouse  # noqa: F401
+import modules.warehouse.domain.entities.warehouse_stock  # noqa: F401
 import shared.domain.entities.user  # noqa: F401 — register model with Base.metadata
 from alembic import context
 from shared.config import settings
