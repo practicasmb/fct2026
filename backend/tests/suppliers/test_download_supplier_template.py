@@ -23,7 +23,10 @@ def test_template_headers():
     result = DownloadSupplierTemplateUseCase().execute()
     wb = load_workbook(BytesIO(result))
     ws = wb.active
-    headers = [ws.cell(1, col).value for col in range(1, len(DownloadSupplierTemplateUseCase.HEADERS) + 1)]
+    headers = [
+        ws.cell(1, col).value
+        for col in range(1, len(DownloadSupplierTemplateUseCase.HEADERS) + 1)
+    ]
     assert headers == list(DownloadSupplierTemplateUseCase.HEADERS)
 
 
@@ -31,5 +34,8 @@ def test_template_example_row():
     result = DownloadSupplierTemplateUseCase().execute()
     wb = load_workbook(BytesIO(result))
     ws = wb.active
-    example = [ws.cell(2, col).value for col in range(1, len(DownloadSupplierTemplateUseCase.EXAMPLE) + 1)]
+    example = [
+        ws.cell(2, col).value
+        for col in range(1, len(DownloadSupplierTemplateUseCase.EXAMPLE) + 1)
+    ]
     assert example == list(DownloadSupplierTemplateUseCase.EXAMPLE)

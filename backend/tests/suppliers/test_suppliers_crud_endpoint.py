@@ -25,6 +25,7 @@ def _mock_user(role: str = "Administrator"):
             firebase_uid="test-uid",
             name="Test User",
         )
+
     return override
 
 
@@ -37,6 +38,7 @@ def _mock_purchases_auth():
             firebase_uid="test-uid",
             name="Test User",
         )
+
     return override
 
 
@@ -63,8 +65,12 @@ def _make_supplier(**kwargs) -> Supplier:
 @pytest_asyncio.fixture
 async def auth_client():
     app.dependency_overrides[get_current_user] = _mock_user()
-    app.dependency_overrides[require_purchases_manager_or_admin] = _mock_purchases_auth()
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    app.dependency_overrides[require_purchases_manager_or_admin] = (
+        _mock_purchases_auth()
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
     del app.dependency_overrides[require_purchases_manager_or_admin]
@@ -73,9 +79,9 @@ async def auth_client():
 async def test_list_suppliers_returns_paginated(auth_client: AsyncClient):
     supplier = _make_supplier()
     mock = MagicMock()
-    mock.execute = AsyncMock(return_value=PaginatedResult(
-        items=[supplier], total=1, page=1, page_size=20
-    ))
+    mock.execute = AsyncMock(
+        return_value=PaginatedResult(items=[supplier], total=1, page=1, page_size=20)
+    )
     app.dependency_overrides[get_list_suppliers_use_case] = lambda: mock
     response = await auth_client.get("/api/v1/suppliers")
     del app.dependency_overrides[get_list_suppliers_use_case]
@@ -88,9 +94,9 @@ async def test_list_suppliers_returns_paginated(auth_client: AsyncClient):
 
 async def test_list_suppliers_pagination_params(auth_client: AsyncClient):
     mock = MagicMock()
-    mock.execute = AsyncMock(return_value=PaginatedResult(
-        items=[], total=0, page=2, page_size=5
-    ))
+    mock.execute = AsyncMock(
+        return_value=PaginatedResult(items=[], total=0, page=2, page_size=5)
+    )
     app.dependency_overrides[get_list_suppliers_use_case] = lambda: mock
     response = await auth_client.get("/api/v1/suppliers?page=2&page_size=5")
     del app.dependency_overrides[get_list_suppliers_use_case]

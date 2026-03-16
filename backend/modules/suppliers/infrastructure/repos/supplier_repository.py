@@ -24,7 +24,10 @@ class SupplierRepository(ISupplierRepository):
 
         offset = (page - 1) * page_size
         result = await self._db.execute(
-            select(Supplier).order_by(Supplier.name, Supplier.supplier_id).limit(page_size).offset(offset)
+            select(Supplier)
+            .order_by(Supplier.name, Supplier.supplier_id)
+            .limit(page_size)
+            .offset(offset)
         )
         items = list(result.scalars().all())
 
@@ -81,13 +84,9 @@ class SupplierRepository(ISupplierRepository):
         supplier.is_active = is_active
         await self._db.flush()
 
-    async def get_products_by_supplier(
-        self, supplier_id: int
-    ) -> list[SupplierProduct]:
+    async def get_products_by_supplier(self, supplier_id: int) -> list[SupplierProduct]:
         result = await self._db.execute(
-            select(SupplierProduct).where(
-                SupplierProduct.supplier_id == supplier_id
-            )
+            select(SupplierProduct).where(SupplierProduct.supplier_id == supplier_id)
         )
         return list(result.scalars().all())
 

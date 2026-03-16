@@ -13,9 +13,7 @@ class GetSupplierUseCase(IGetSupplierUseCase):
     def __init__(self, repo: ISupplierRepository) -> None:
         self._repo = repo
 
-    async def execute(
-        self, supplier_id: int
-    ) -> tuple[Supplier, list[SupplierProduct]]:
+    async def execute(self, supplier_id: int) -> tuple[Supplier, list[SupplierProduct]]:
         supplier = await self._repo.get_by_id(supplier_id)
         if supplier is None:
             raise SupplierException(SupplierExceptionInfo.SUPPLIER_NOT_FOUND)

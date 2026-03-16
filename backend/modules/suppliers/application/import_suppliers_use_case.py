@@ -53,7 +53,11 @@ class ImportSuppliersUseCase(IImportSuppliersUseCase):
                 return ImportResult(
                     total=0,
                     created=0,
-                    errors=[ImportRowError(row=1, reason="File is empty or has no data rows")],
+                    errors=[
+                        ImportRowError(
+                            row=1, reason="File is empty or has no data rows"
+                        )
+                    ],
                 )
 
             headers = [str(h).strip() if h else "" for h in header_row]
@@ -63,7 +67,11 @@ class ImportSuppliersUseCase(IImportSuppliersUseCase):
                 return ImportResult(
                     total=0,
                     created=0,
-                    errors=[ImportRowError(row=1, reason="Invalid headers. Use the provided template")],
+                    errors=[
+                        ImportRowError(
+                            row=1, reason="Invalid headers. Use the provided template"
+                        )
+                    ],
                 )
 
             errors: list[ImportRowError] = []

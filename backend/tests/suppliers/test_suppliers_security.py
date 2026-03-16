@@ -18,17 +18,20 @@ def _mock_user(role: str, department_id: int | None = None):
             firebase_uid="test-uid",
             name="Test User",
         )
+
     return override
 
 
 def _mock_db(dept_id: int | None):
     """Returns a get_db override whose session resolves a department query to dept_id."""
+
     async def override_get_db():
         session = MagicMock()
         result = MagicMock()
         result.scalar_one_or_none.return_value = dept_id
         session.execute = AsyncMock(return_value=result)
         yield session
+
     return override_get_db
 
 
@@ -36,7 +39,9 @@ def _mock_db(dept_id: int | None):
 async def admin_client():
     app.dependency_overrides[get_current_user] = _mock_user("Administrator")
     app.dependency_overrides[get_db] = _mock_db(None)
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
     del app.dependency_overrides[get_db]
@@ -45,9 +50,13 @@ async def admin_client():
 @pytest_asyncio.fixture
 async def purchases_manager_client():
     purchases_dept_id = 5
-    app.dependency_overrides[get_current_user] = _mock_user("Manager", purchases_dept_id)
+    app.dependency_overrides[get_current_user] = _mock_user(
+        "Manager", purchases_dept_id
+    )
     app.dependency_overrides[get_db] = _mock_db(purchases_dept_id)
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
     del app.dependency_overrides[get_db]
@@ -57,7 +66,9 @@ async def purchases_manager_client():
 async def other_manager_client():
     app.dependency_overrides[get_current_user] = _mock_user("Manager", department_id=99)
     app.dependency_overrides[get_db] = _mock_db(5)  # Purchases dept is 5, user is in 99
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
     del app.dependency_overrides[get_db]
@@ -67,7 +78,9 @@ async def other_manager_client():
 async def employee_client():
     app.dependency_overrides[get_current_user] = _mock_user("Employee")
     app.dependency_overrides[get_db] = _mock_db(None)
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
     del app.dependency_overrides[get_db]

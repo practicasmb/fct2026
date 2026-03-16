@@ -24,12 +24,24 @@ def _make_xlsx(headers: list, rows: list[list]) -> bytes:
 
 
 VALID_HEADERS = [
-    "Nombre", "CIF", "Dirección", "Ciudad",
-    "Provincia", "Código Postal", "Teléfono", "Email",
+    "Nombre",
+    "CIF",
+    "Dirección",
+    "Ciudad",
+    "Provincia",
+    "Código Postal",
+    "Teléfono",
+    "Email",
 ]
 VALID_ROW = [
-    "Proveedor Test S.L.", "B12345674", "Calle Mayor 1",
-    "Madrid", "Madrid", "28001", "910000000", "test@test.com",
+    "Proveedor Test S.L.",
+    "B12345674",
+    "Calle Mayor 1",
+    "Madrid",
+    "Madrid",
+    "28001",
+    "910000000",
+    "test@test.com",
 ]
 
 
@@ -42,6 +54,7 @@ def _mock_user(role: str):
             firebase_uid="test-uid",
             name="Test User",
         )
+
     return override
 
 
@@ -58,7 +71,9 @@ def _mock_use_case(result: ImportResult):
 @pytest_asyncio.fixture
 async def admin_client():
     app.dependency_overrides[get_current_user] = _mock_user("Administrator")
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
 
@@ -67,7 +82,9 @@ async def admin_client():
 async def manager_client():
     app.dependency_overrides[get_current_user] = _mock_user("Manager")
     app.dependency_overrides[require_purchases_manager_or_admin] = _mock_user("Manager")
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
     del app.dependency_overrides[require_purchases_manager_or_admin]
@@ -76,7 +93,9 @@ async def manager_client():
 @pytest_asyncio.fixture
 async def employee_client():
     app.dependency_overrides[get_current_user] = _mock_user("Employee")
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
 
@@ -88,7 +107,13 @@ async def test_administrator_can_import(admin_client: AsyncClient):
     content = _make_xlsx(VALID_HEADERS, [VALID_ROW])
     response = await admin_client.post(
         "/api/v1/suppliers/import",
-        files={"file": ("suppliers.xlsx", content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+        files={
+            "file": (
+                "suppliers.xlsx",
+                content,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        },
     )
     assert response.status_code == 200
     body = response.json()
@@ -104,13 +129,21 @@ async def test_manager_can_import(manager_client: AsyncClient):
     content = _make_xlsx(VALID_HEADERS, [VALID_ROW])
     response = await manager_client.post(
         "/api/v1/suppliers/import",
-        files={"file": ("suppliers.xlsx", content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+        files={
+            "file": (
+                "suppliers.xlsx",
+                content,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        },
     )
     assert response.status_code == 200
     del app.dependency_overrides[get_import_suppliers_use_case]
 
 
-async def test_import_with_errors_returns_200_with_error_detail(admin_client: AsyncClient):
+async def test_import_with_errors_returns_200_with_error_detail(
+    admin_client: AsyncClient,
+):
     app.dependency_overrides[get_import_suppliers_use_case] = _mock_use_case(
         ImportResult(
             total=1,
@@ -121,7 +154,13 @@ async def test_import_with_errors_returns_200_with_error_detail(admin_client: As
     content = _make_xlsx(VALID_HEADERS, [VALID_ROW])
     response = await admin_client.post(
         "/api/v1/suppliers/import",
-        files={"file": ("suppliers.xlsx", content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+        files={
+            "file": (
+                "suppliers.xlsx",
+                content,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        },
     )
     assert response.status_code == 200
     body = response.json()
@@ -135,7 +174,13 @@ async def test_employee_gets_forbidden(employee_client: AsyncClient):
     content = _make_xlsx(VALID_HEADERS, [VALID_ROW])
     response = await employee_client.post(
         "/api/v1/suppliers/import",
-        files={"file": ("suppliers.xlsx", content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+        files={
+            "file": (
+                "suppliers.xlsx",
+                content,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        },
     )
     assert response.status_code == 403
 
@@ -144,6 +189,12 @@ async def test_unauthenticated_gets_unauthorized(unauthenticated_client: AsyncCl
     content = _make_xlsx(VALID_HEADERS, [VALID_ROW])
     response = await unauthenticated_client.post(
         "/api/v1/suppliers/import",
-        files={"file": ("suppliers.xlsx", content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+        files={
+            "file": (
+                "suppliers.xlsx",
+                content,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        },
     )
     assert response.status_code == 401

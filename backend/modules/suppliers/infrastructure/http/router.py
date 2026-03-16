@@ -92,9 +92,7 @@ def download_template(
     return StreamingResponse(
         BytesIO(content),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={
-            "Content-Disposition": "attachment; filename=suppliers_template.xlsx"
-        },
+        headers={"Content-Disposition": "attachment; filename=suppliers_template.xlsx"},
     )
 
 

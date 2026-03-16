@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
+from shared.constants import EMAIL_PATTERN, PHONE_PATTERN, POSTAL_CODE_PATTERN
+
 
 class ImportErrorDTO(BaseModel):
     row: int
@@ -36,8 +38,6 @@ class SupplierDetailDTO(SupplierDTO):
     email: str
     products: list[SupplierProductDTO]
 
-
-from shared.constants import EMAIL_PATTERN, PHONE_PATTERN, POSTAL_CODE_PATTERN
 
 class UpdateSupplierDTO(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=150)

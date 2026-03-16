@@ -22,7 +22,9 @@ def _mock_user(role: str):
 @pytest_asyncio.fixture
 async def admin_client():
     app.dependency_overrides[get_current_user] = _mock_user("Administrator")
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
 
@@ -31,7 +33,9 @@ async def admin_client():
 async def manager_client():
     app.dependency_overrides[get_current_user] = _mock_user("Manager")
     app.dependency_overrides[require_purchases_manager_or_admin] = _mock_user("Manager")
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
     del app.dependency_overrides[require_purchases_manager_or_admin]
@@ -40,7 +44,9 @@ async def manager_client():
 @pytest_asyncio.fixture
 async def employee_client():
     app.dependency_overrides[get_current_user] = _mock_user("Employee")
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
 

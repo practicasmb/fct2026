@@ -39,8 +39,21 @@ async def test_get_existing_tax_ids_returns_matches(db_session: AsyncSession):
 async def test_bulk_create_returns_count(db_session: AsyncSession):
     repo = SupplierRepository(db_session)
     suppliers = [
-        _make_supplier(tax_id="B11111111", name="Proveedor A", phone="910000001", email="a@test.com"),
-        _make_supplier(tax_id="B22222222", name="Proveedor B", city="Barcelona", province="Barcelona", postal_code="08001", phone="930000001", email="b@test.com"),
+        _make_supplier(
+            tax_id="B11111111",
+            name="Proveedor A",
+            phone="910000001",
+            email="a@test.com",
+        ),
+        _make_supplier(
+            tax_id="B22222222",
+            name="Proveedor B",
+            city="Barcelona",
+            province="Barcelona",
+            postal_code="08001",
+            phone="930000001",
+            email="b@test.com",
+        ),
     ]
     count = await repo.bulk_create(suppliers)
     assert count == 2
@@ -55,10 +68,12 @@ async def test_bulk_create_persists_supplier(db_session: AsyncSession):
 
 async def test_get_all_paginated_returns_items(db_session: AsyncSession):
     repo = SupplierRepository(db_session)
-    await repo.bulk_create([
-        _make_supplier(tax_id="B44444444", name="Proveedor A"),
-        _make_supplier(tax_id="B55555555", name="Proveedor B"),
-    ])
+    await repo.bulk_create(
+        [
+            _make_supplier(tax_id="B44444444", name="Proveedor A"),
+            _make_supplier(tax_id="B55555555", name="Proveedor B"),
+        ]
+    )
     result = await repo.get_all_paginated(page=1, page_size=10)
     assert result.total >= 2
     assert len(result.items) >= 2
@@ -66,11 +81,13 @@ async def test_get_all_paginated_returns_items(db_session: AsyncSession):
 
 async def test_get_all_paginated_respects_page_size(db_session: AsyncSession):
     repo = SupplierRepository(db_session)
-    await repo.bulk_create([
-        _make_supplier(tax_id="B66666666", name="Proveedor C"),
-        _make_supplier(tax_id="B77777777", name="Proveedor D"),
-        _make_supplier(tax_id="B88888888", name="Proveedor E"),
-    ])
+    await repo.bulk_create(
+        [
+            _make_supplier(tax_id="B66666666", name="Proveedor C"),
+            _make_supplier(tax_id="B77777777", name="Proveedor D"),
+            _make_supplier(tax_id="B88888888", name="Proveedor E"),
+        ]
+    )
     result = await repo.get_all_paginated(page=1, page_size=2)
     assert len(result.items) <= 2
 
@@ -78,7 +95,16 @@ async def test_get_all_paginated_respects_page_size(db_session: AsyncSession):
 async def test_update_not_found_raises(db_session: AsyncSession):
     repo = SupplierRepository(db_session)
     with pytest.raises(SupplierException):
-        await repo.update(supplier_id=99999, name="X", address=None, city=None, province=None, postal_code=None, phone=None, email=None)
+        await repo.update(
+            supplier_id=99999,
+            name="X",
+            address=None,
+            city=None,
+            province=None,
+            postal_code=None,
+            phone=None,
+            email=None,
+        )
 
 
 async def test_set_active_not_found_raises(db_session: AsyncSession):
