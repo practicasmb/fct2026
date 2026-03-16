@@ -6,7 +6,7 @@ from httpx import ASGITransport, AsyncClient
 from openpyxl import Workbook
 
 from composition.dependencies import get_import_suppliers_use_case
-from composition.security import get_current_user
+from composition.security import get_current_user, require_purchases_manager_or_admin
 from main import app
 from modules.suppliers.domain.entities.import_result import ImportResult, ImportRowError
 from shared.domain.entities.user_session import UserSession
@@ -66,9 +66,11 @@ async def admin_client():
 @pytest_asyncio.fixture
 async def manager_client():
     app.dependency_overrides[get_current_user] = _mock_user("Manager")
+    app.dependency_overrides[require_purchases_manager_or_admin] = _mock_user("Manager")
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
     del app.dependency_overrides[get_current_user]
+    del app.dependency_overrides[require_purchases_manager_or_admin]
 
 
 @pytest_asyncio.fixture

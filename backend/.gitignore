@@ -55,3 +55,8 @@ logs/
 # Firebase
 firebase-credentials.json
 *-firebase-adminsdk-*.json
+
+# Local Gemini/Docs/Planning files
+.gemini/
+*.md
+*.docx

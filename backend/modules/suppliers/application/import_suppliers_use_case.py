@@ -7,6 +7,7 @@ from modules.suppliers.domain.entities.import_result import (
     ImportResult,
     ImportRowError,
 )
+from modules.suppliers.domain.entities.supplier import Supplier
 from modules.suppliers.domain.interfaces.repositories.i_supplier_repository import (
     ISupplierRepository,
 )
@@ -66,7 +67,7 @@ class ImportSuppliersUseCase(IImportSuppliersUseCase):
                 )
 
             errors: list[ImportRowError] = []
-            parsed: list[dict] = []
+            parsed: list[Supplier] = []
             seen_tax_ids: set[str] = set()
             total = 0
 
@@ -76,24 +77,24 @@ class ImportSuppliersUseCase(IImportSuppliersUseCase):
                 if row_errors:
                     errors.extend(row_errors)
                 else:
-                    supplier_data = {
+                    fields = {
                         db_field: str(row[col_idx]).strip()
                         for col_idx, db_field in enumerate(COLUMN_MAP.values())
                     }
-                    supplier_data["tax_id"] = supplier_data["tax_id"].upper()
-                    parsed.append(supplier_data)
-                    seen_tax_ids.add(supplier_data["tax_id"])
+                    fields["tax_id"] = fields["tax_id"].upper()
+                    parsed.append(Supplier(**fields))
+                    seen_tax_ids.add(fields["tax_id"])
 
             if parsed and not errors:
                 existing = await self._repo.get_existing_tax_ids(
-                    [s["tax_id"] for s in parsed]
+                    [s.tax_id for s in parsed]
                 )
                 for s in parsed:
-                    if s["tax_id"] in existing:
+                    if s.tax_id in existing:
                         errors.append(
                             ImportRowError(
                                 row=0,
-                                reason=f"CIF {s['tax_id']} already exists in database",
+                                reason=f"CIF {s.tax_id} already exists in database",
                             )
                         )
 
