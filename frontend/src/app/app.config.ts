@@ -5,20 +5,11 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
 import { routes } from './app.routes';
 import { ErpPreset } from '@theme/erp.preset';
-import { FIREBASE_AUTH } from '@core/auth/firebase-auth.token';
-import { FirebaseAuthRepository } from '@infrastructure/repositories/auth/firebase-auth.repository';
-import { AuthRepository } from '@domain/repositories/auth.repository';
 import { DepartmentRepository } from '@domain/repositories/department.repository';
-import { HttpDepartmentRepository } from '@infrastructure/repositories/http/department.repository.http';
+import { MockDepartmentRepository } from '@infrastructure/repositories/mock/department.repository.mock';
 import { authInterceptor } from '@core/interceptors/auth.interceptor';
-import { environment } from 'environments/environment';
-
-const firebaseApp = initializeApp(environment.firebase);
-const firebaseAuth = getAuth(firebaseApp);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -30,8 +21,7 @@ export const appConfig: ApplicationConfig = {
         authInterceptor,
       ])
     ),
-    { provide: FIREBASE_AUTH, useValue: firebaseAuth },
-    { provide: AuthRepository, useClass: FirebaseAuthRepository },
+    { provide: DepartmentRepository, useClass: MockDepartmentRepository },
     providePrimeNG({
       ripple: true,
       theme: {
