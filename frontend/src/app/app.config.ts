@@ -32,6 +32,7 @@ export const appConfig: ApplicationConfig = {
     ),
     { provide: FIREBASE_AUTH, useValue: firebaseAuth },
     { provide: AuthRepository, useClass: FirebaseAuthRepository },
+    { provide: DepartmentRepository, useClass: HttpDepartmentRepository },
     providePrimeNG({
       ripple: true,
       theme: {
