@@ -4,7 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { DepartmentRepository } from '@domain/repositories/department.repository';
 import { Department } from '@domain/models/department.model';
-import { DepartmentHasUsersError, DepartmentNameDuplicateError } from '@domain/models/department-errors';
+import { DepartmentHasUsersError, DepartmentNameDuplicateError, UnauthorizedError } from '@domain/models/department-errors';
 import { DepartmentDto } from '@infrastructure/dtos/department.dto';
 import { DepartmentMapper } from '@infrastructure/mappers/department.mapper';
 import { environment } from 'environments/environment';
@@ -20,7 +20,7 @@ export class HttpDepartmentRepository implements DepartmentRepository {
       catchError(err => {
         if (err instanceof HttpErrorResponse) {
           if (err.status === 401 || err.status === 403) {
-            return throwError(() => new Error('No autorizado para obtener departamentos'));
+            return throwError(() => new UnauthorizedError());
           }
         }
         return throwError(() => err);
@@ -34,7 +34,7 @@ export class HttpDepartmentRepository implements DepartmentRepository {
       catchError(err => {
         if (err instanceof HttpErrorResponse) {
           if (err.status === 401 || err.status === 403) {
-            return throwError(() => new Error('No autorizado para crear departamentos'));
+            return throwError(() => new UnauthorizedError());
           }
           if (err.status === 409 || err.status === 400) {
             return throwError(() => new DepartmentNameDuplicateError());
@@ -51,7 +51,7 @@ export class HttpDepartmentRepository implements DepartmentRepository {
       catchError(err => {
         if (err instanceof HttpErrorResponse) {
           if (err.status === 401 || err.status === 403) {
-            return throwError(() => new Error('No autorizado para editar departamentos'));
+            return throwError(() => new UnauthorizedError());
           }
           if (err.status === 409 || err.status === 400) {
             return throwError(() => new DepartmentNameDuplicateError());
@@ -67,7 +67,7 @@ export class HttpDepartmentRepository implements DepartmentRepository {
       catchError(err => {
         if (err instanceof HttpErrorResponse) {
           if (err.status === 401 || err.status === 403) {
-            return throwError(() => new Error('No autorizado para eliminar departamentos'));
+            return throwError(() => new UnauthorizedError());
           }
           if (err.status === 409 || err.status === 400) {
             return throwError(() => new DepartmentHasUsersError());

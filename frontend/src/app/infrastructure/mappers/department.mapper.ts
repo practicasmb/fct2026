@@ -6,7 +6,7 @@ export class DepartmentMapper {
     return {
       id: String(dto.department_id),
       name: dto.name,
-      userCount: 0,
+      userCount: 0, // TODO: Implement user count from backend when available
     };
   }
 }
