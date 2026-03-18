@@ -49,6 +49,20 @@ describe('Department Use Cases', () => {
       await firstValueFrom(useCase.execute('  Tecnología  '));
       expect(mockRepo.create).toHaveBeenCalledWith('Tecnología');
     });
+
+    it('throws error when name is empty after trimming', async () => {
+      const useCase = TestBed.inject(CreateDepartmentUseCase);
+      await expect(firstValueFrom(useCase.execute('   ')))
+        .rejects.toThrow('Department name cannot be empty');
+      expect(mockRepo.create).not.toHaveBeenCalled();
+    });
+
+    it('throws error when name is null or undefined', async () => {
+      const useCase = TestBed.inject(CreateDepartmentUseCase);
+      await expect(firstValueFrom(useCase.execute('' as any)))
+        .rejects.toThrow('Department name cannot be empty');
+      expect(mockRepo.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('UpdateDepartmentUseCase', () => {
@@ -56,6 +70,20 @@ describe('Department Use Cases', () => {
       const useCase = TestBed.inject(UpdateDepartmentUseCase);
       await firstValueFrom(useCase.execute('1', '  Ventas  '));
       expect(mockRepo.update).toHaveBeenCalledWith('1', 'Ventas');
+    });
+
+    it('throws error when name is empty after trimming', async () => {
+      const useCase = TestBed.inject(UpdateDepartmentUseCase);
+      await expect(firstValueFrom(useCase.execute('1', '   ')))
+        .rejects.toThrow('Department name cannot be empty');
+      expect(mockRepo.update).not.toHaveBeenCalled();
+    });
+
+    it('throws error when name is null or undefined', async () => {
+      const useCase = TestBed.inject(UpdateDepartmentUseCase);
+      await expect(firstValueFrom(useCase.execute('1', '' as any)))
+        .rejects.toThrow('Department name cannot be empty');
+      expect(mockRepo.update).not.toHaveBeenCalled();
     });
   });
 

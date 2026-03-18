@@ -1,3 +1,4 @@
+// TODO: Implement DepartmentHasUsersError usage when department deletion with users validation is required
 export class DepartmentHasUsersError extends Error {
   override readonly name = 'DepartmentHasUsersError';
 

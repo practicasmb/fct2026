@@ -1,13 +1,20 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { DepartmentRepository } from '@domain/repositories/department.repository';
 import { Department } from '@domain/models/department.model';
+import { DepartmentNameDuplicateError } from '@domain/models/department-errors';
 
 @Injectable({ providedIn: 'root' })
 export class CreateDepartmentUseCase {
   private readonly repo = inject(DepartmentRepository);
 
   execute(name: string): Observable<Department> {
-    return this.repo.create(name.trim());
+    const trimmedName = name.trim();
+    
+    if (!trimmedName) {
+      return throwError(() => new Error('Department name cannot be empty'));
+    }
+    
+    return this.repo.create(trimmedName);
   }
 }
