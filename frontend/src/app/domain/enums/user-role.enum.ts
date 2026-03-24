@@ -1,5 +1,5 @@
+// TODO: Integrate UserRole enum with AuthUser.role field for type safety when role management is implemented
 export enum UserRole {
-  Admin = 'admin',
-  Administrator = 'administrator', // backend currently returns 'Administrator' or similar
+  Administrator = 'administrator', // backend returns 'administrator' - required for compatibility
   User = 'user',
 }
