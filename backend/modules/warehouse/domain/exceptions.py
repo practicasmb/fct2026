@@ -21,10 +21,18 @@ class WarehouseExceptionInfo(AppExceptionInfo):
 
     # Warehouses (61xx)
     WAREHOUSE_NOT_FOUND = (6101, "Warehouse not found", 404)
+    WAREHOUSE_NAME_DUPLICATE = (6102, "Warehouse name already exists", 409)
+    WAREHOUSE_HAS_STOCK = (6103, "Cannot delete warehouse with existing stock", 409)
 
     # Stock (62xx)
     PRODUCT_NOT_FOUND = (6201, "Product not found", 404)
     INSUFFICIENT_STOCK = (6202, "Insufficient stock", 409)
+    STOCK_RECORD_NOT_FOUND = (
+        6203,
+        "Stock record not found for this warehouse and product",
+        404,
+    )
+    PRODUCT_NOT_ACTIVE = (6204, "Product is not active", 409)
 
 
 class WarehouseException(AppException):
