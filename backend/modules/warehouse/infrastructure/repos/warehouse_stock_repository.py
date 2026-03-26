@@ -2,16 +2,14 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.catalog.domain.entities.product import Product
+from modules.warehouse.domain.dtos.product_stock_overview import WarehouseStockDetail
+from modules.warehouse.domain.dtos.stock_distribution import StockDistributionItem
 from modules.warehouse.domain.entities.warehouse import Warehouse
 from modules.warehouse.domain.entities.warehouse_stock import WarehouseStock
 from modules.warehouse.domain.interfaces.repositories.i_warehouse_stock_repository import (
     IWarehouseStockRepository,
 )
-from modules.warehouse.domain.product_stock_overview import WarehouseStockDetail
-from modules.warehouse.domain.stock_distribution import (
-    StockDistributionItem,
-    StockDistributionPage,
-)
+from shared.domain.paginated_result import PaginatedResult
 
 
 class WarehouseStockRepository(IWarehouseStockRepository):
@@ -83,14 +81,13 @@ class WarehouseStockRepository(IWarehouseStockRepository):
 
     async def list_distribution(
         self,
-        *,
+        page: int,
+        page_size: int,
         warehouse_id: int | None = None,
         product_id: int | None = None,
-        page: int = 1,
-        page_size: int = 20,
-    ) -> StockDistributionPage:
+    ) -> PaginatedResult[StockDistributionItem]:
         """Return paginated stock distribution with server-side filtering."""
-        base_query = (
+        query = (
             select(
                 WarehouseStock,
                 Warehouse.name.label("warehouse_name"),
@@ -100,32 +97,22 @@ class WarehouseStockRepository(IWarehouseStockRepository):
             .join(Warehouse, WarehouseStock.warehouse_id == Warehouse.warehouse_id)
             .join(Product, WarehouseStock.product_id == Product.product_id)
         )
-        count_query = (
-            select(func.count())
-            .select_from(WarehouseStock)
-            .join(Warehouse, WarehouseStock.warehouse_id == Warehouse.warehouse_id)
-            .join(Product, WarehouseStock.product_id == Product.product_id)
-        )
 
         if warehouse_id is not None:
-            base_query = base_query.where(WarehouseStock.warehouse_id == warehouse_id)
-            count_query = count_query.where(WarehouseStock.warehouse_id == warehouse_id)
+            query = query.where(WarehouseStock.warehouse_id == warehouse_id)
 
         if product_id is not None:
-            base_query = base_query.where(WarehouseStock.product_id == product_id)
-            count_query = count_query.where(WarehouseStock.product_id == product_id)
+            query = query.where(WarehouseStock.product_id == product_id)
 
-        total_result = await self._db.execute(count_query)
-        total_count = total_result.scalar_one()
+        count_query = select(func.count()).select_from(query.subquery())
+        total = (await self._db.execute(count_query)).scalar_one()
 
         offset = (page - 1) * page_size
-        base_query = (
-            base_query.order_by(Warehouse.name, Product.name)
-            .offset(offset)
-            .limit(page_size)
+        query = (
+            query.order_by(Warehouse.name, Product.name).offset(offset).limit(page_size)
         )
 
-        result = await self._db.execute(base_query)
+        result = await self._db.execute(query)
         items = [
             StockDistributionItem(
                 warehouse_id=row.WarehouseStock.warehouse_id,
@@ -140,9 +127,9 @@ class WarehouseStockRepository(IWarehouseStockRepository):
             for row in result.all()
         ]
 
-        return StockDistributionPage(
+        return PaginatedResult(
             items=items,
-            total_count=total_count,
+            total=total,
             page=page,
             page_size=page_size,
         )
