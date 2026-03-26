@@ -14,9 +14,11 @@ def register_routers(app: FastAPI) -> None:
     from modules.catalog.infrastructure.http.router import router as catalog_router
     from modules.clients.infrastructure.http.router import router as clients_router
     from modules.suppliers.infrastructure.http.router import router as suppliers_router
+    from modules.warehouse.infrastructure.http.router import router as warehouse_router
 
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(admin_router, prefix="/api/v1")
     app.include_router(catalog_router, prefix="/api/v1")
     app.include_router(suppliers_router, prefix="/api/v1")
     app.include_router(clients_router, prefix="/api/v1")
+    app.include_router(warehouse_router, prefix="/api/v1")
