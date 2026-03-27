@@ -2,19 +2,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { CategoriesStore } from './categories.store';
-import { AuthService } from '@core/services/auth.service';
-import { CategoryRepository } from '@domain/repositories/category.repository';
-import { GetCategoriesUseCase } from '@domain/usecases/category/get-categories.usecase';
-import { GetCategoryByIdUseCase } from '@domain/usecases/category/get-category-by-id.usecase';
-import { GetCategoryByNameUseCase } from '@domain/usecases/category/get-category-by-name.usecase';
-import { CreateCategoryUseCase } from '@domain/usecases/category/create-category.usecase';
-import { UpdateCategoryUseCase } from '@domain/usecases/category/update-category.usecase';
-import { DeleteCategoryUseCase } from '@domain/usecases/category/delete-category.usecase';
+import { AuthService } from '../../../core/services/auth.service';
+import { CategoryRepository } from '../../../domain/repositories/category.repository';
+import { GetCategoriesUseCase } from '../../../domain/usecases/category/get-categories.usecase';
+import { GetCategoryByIdUseCase } from '../../../domain/usecases/category/get-category-by-id.usecase';
+import { GetCategoryByNameUseCase } from '../../../domain/usecases/category/get-category-by-name.usecase';
+import { CreateCategoryUseCase } from '../../../domain/usecases/category/create-category.usecase';
+import { UpdateCategoryUseCase } from '../../../domain/usecases/category/update-category.usecase';
+import { DeleteCategoryUseCase } from '../../../domain/usecases/category/delete-category.usecase';
 import {
   Category,
   CreateCategoryPayload,
   UpdateCategoryPayload,
-} from '@domain/models/category.model';
+} from '../../../domain/models/category.model';
 import {
   CategoryForbiddenError,
   CategoryValidationError,
@@ -23,7 +23,8 @@ import {
   CategoryApiError,
   CategoryAlreadyExistsError,
   CategoryHasProductsError,
-} from '@domain/models/category-errors';
+} from '../../../domain/models/category-errors';
+import { Observable, of, throwError } from 'rxjs';
 
 const CATEGORY_A: Category = {
   categoryId: 1,
@@ -48,31 +49,31 @@ class MockAuthService {
 }
 
 class MockCategoryRepository {
-  categoryHasProducts = vi.fn<(id: number) => Promise<boolean>>();
+  categoryHasProducts = vi.fn<(id: number) => Observable<boolean>>();
 }
 
 class MockGetCategoriesUseCase {
-  execute = vi.fn<() => Promise<Category[]>>();
+  execute = vi.fn<() => Observable<Category[]>>();
 }
 
 class MockGetCategoryByIdUseCase {
-  execute = vi.fn<(id: number) => Promise<Category>>();
+  execute = vi.fn<(id: number) => Observable<Category>>();
 }
 
 class MockGetCategoryByNameUseCase {
-  execute = vi.fn<(name: string) => Promise<Category | null>>();
+  execute = vi.fn<(name: string) => Observable<Category | null>>();
 }
 
 class MockCreateCategoryUseCase {
-  execute = vi.fn<(payload: CreateCategoryPayload) => Promise<Category>>();
+  execute = vi.fn<(payload: CreateCategoryPayload) => Observable<Category>>();
 }
 
 class MockUpdateCategoryUseCase {
-  execute = vi.fn<(id: number, payload: UpdateCategoryPayload) => Promise<Category>>();
+  execute = vi.fn<(id: number, payload: UpdateCategoryPayload) => Observable<Category>>();
 }
 
 class MockDeleteCategoryUseCase {
-  execute = vi.fn<(id: number) => Promise<void>>();
+  execute = vi.fn<(id: number) => Observable<void>>();
 }
 
 describe('CategoriesStore', () => {
@@ -113,7 +114,7 @@ describe('CategoriesStore', () => {
 
   it('loads categories successfully', async () => {
     const categories = [CATEGORY_A, CATEGORY_B];
-    getCategoriesUseCase.execute.mockResolvedValue(categories);
+    getCategoriesUseCase.execute.mockReturnValue(of(categories));
 
     await store.loadCategories();
 
@@ -124,25 +125,25 @@ describe('CategoriesStore', () => {
   });
 
   it('sets error when loading categories fails', async () => {
-    getCategoriesUseCase.execute.mockRejectedValueOnce(new Error('boom'));
+    getCategoriesUseCase.execute.mockReturnValueOnce(throwError(() => new Error()));
 
     await store.loadCategories();
 
-    expect(store.error()).toBe('Failed to load categories.');
+    expect(store.error()).toBe('No se pudieron cargar las categorías.');
     expect(store.loading()).toBe(false);
   });
 
   it('maps forbidden categories error to specific message', async () => {
-    getCategoriesUseCase.execute.mockRejectedValueOnce(new CategoryForbiddenError());
+    getCategoriesUseCase.execute.mockReturnValueOnce(throwError(() => new CategoryForbiddenError()));
 
     await store.loadCategories();
 
-    expect(store.error()).toBe('You do not have permissions to perform this action.');
+    expect(store.error()).toBe('Se requieren permisos de administrador.');
   });
 
   it('maps validation categories error to backend message', async () => {
-    createCategoryUseCase.execute.mockRejectedValueOnce(
-      new CategoryValidationError({ field: 'name' }, 'Name already exists.'),
+    createCategoryUseCase.execute.mockReturnValueOnce(
+      throwError(() => new CategoryValidationError({ field: 'name' }, 'Name already exists.')),
     );
 
     await store.saveCategory('Electronics', 'Test description');
@@ -155,7 +156,7 @@ describe('CategoriesStore', () => {
       name: 'Clothing',
       description: 'Apparel and fashion items',
     };
-    createCategoryUseCase.execute.mockResolvedValueOnce(CATEGORY_B);
+    createCategoryUseCase.execute.mockReturnValueOnce(of(CATEGORY_B));
 
     store.categories.set([CATEGORY_A]);
     store.dialogVisible.set(true);
@@ -171,7 +172,7 @@ describe('CategoriesStore', () => {
   it('updates an existing category in edit mode', async () => {
     const updated: Category = { ...CATEGORY_A, name: 'Updated Electronics' };
     const payload: UpdateCategoryPayload = { name: 'Updated Electronics', description: 'Updated description' };
-    updateCategoryUseCase.execute.mockResolvedValueOnce(updated);
+    updateCategoryUseCase.execute.mockReturnValueOnce(of(updated));
 
     store.categories.set([CATEGORY_A]);
     store.selectedCategory.set(CATEGORY_A);
@@ -185,7 +186,7 @@ describe('CategoriesStore', () => {
   });
 
   it('deletes category and closes confirm dialog', async () => {
-    deleteCategoryUseCase.execute.mockResolvedValueOnce();
+    deleteCategoryUseCase.execute.mockReturnValueOnce(of(undefined));
 
     store.categories.set([CATEGORY_A, CATEGORY_B]);
     store.categoryToDelete.set(CATEGORY_A);
@@ -200,7 +201,7 @@ describe('CategoriesStore', () => {
   });
 
   it('loads category by ID successfully', async () => {
-    getCategoryByIdUseCase.execute.mockResolvedValueOnce(CATEGORY_A);
+    getCategoryByIdUseCase.execute.mockReturnValueOnce(of(CATEGORY_A));
 
     await store.loadCategoryById(1);
 
@@ -210,11 +211,11 @@ describe('CategoriesStore', () => {
   });
 
   it('sets error when loading category by ID fails', async () => {
-    getCategoryByIdUseCase.execute.mockRejectedValueOnce(new Error('not found'));
+    getCategoryByIdUseCase.execute.mockReturnValueOnce(throwError(() => new Error()));
 
     await store.loadCategoryById(1);
 
-    expect(store.error()).toBe('Failed to load category.');
+    expect(store.error()).toBe('No se pudo cargar la categoría.');
     expect(store.loading()).toBe(false);
   });
 
@@ -239,7 +240,7 @@ describe('CategoriesStore', () => {
   });
 
   it('open edit dialog sets correct state', async () => {
-    getCategoryByIdUseCase.execute.mockResolvedValue(CATEGORY_A);
+    getCategoryByIdUseCase.execute.mockReturnValue(of(CATEGORY_A));
     
     await store.openEditDialog(CATEGORY_A);
 
@@ -294,24 +295,24 @@ describe('CategoriesStore', () => {
   });
 
   it('maps unauthorized error to session expired message', async () => {
-    getCategoriesUseCase.execute.mockRejectedValueOnce(new CategoryUnauthorizedError());
+    getCategoriesUseCase.execute.mockReturnValueOnce(throwError(() => new CategoryUnauthorizedError()));
 
     await store.loadCategories();
 
-    expect(store.error()).toBe('Your session has expired. Please sign in again.');
+    expect(store.error()).toBe('Autenticación requerida.');
   });
 
   it('maps not found error to specific message', async () => {
-    getCategoryByIdUseCase.execute.mockRejectedValueOnce(new CategoryNotFoundError());
+    getCategoryByIdUseCase.execute.mockReturnValueOnce(throwError(() => new CategoryNotFoundError()));
 
     await store.loadCategoryById(1);
 
-    expect(store.error()).toBe('The selected category no longer exists.');
+    expect(store.error()).toBe('Categoría no encontrada.');
   });
 
   it('maps already exists error to specific message', async () => {
-    createCategoryUseCase.execute.mockRejectedValueOnce(
-      new CategoryAlreadyExistsError('Category already exists'),
+    createCategoryUseCase.execute.mockReturnValueOnce(
+      throwError(() => new CategoryAlreadyExistsError('Category already exists')),
     );
 
     await store.saveCategory('Electronics', 'Test');
@@ -320,8 +321,8 @@ describe('CategoriesStore', () => {
   });
 
   it('maps has products error to specific message', async () => {
-    deleteCategoryUseCase.execute.mockRejectedValueOnce(
-      new CategoryHasProductsError('Cannot delete category with products'),
+    deleteCategoryUseCase.execute.mockReturnValueOnce(
+      throwError(() => new CategoryHasProductsError('Cannot delete category with products')),
     );
 
     store.categoryToDelete.set(CATEGORY_A);
@@ -333,7 +334,7 @@ describe('CategoriesStore', () => {
   });
 
   it('maps API error to fallback message', async () => {
-    getCategoriesUseCase.execute.mockRejectedValueOnce(new CategoryApiError('Service unavailable'));
+    getCategoriesUseCase.execute.mockReturnValueOnce(throwError(() => new CategoryApiError('Service unavailable')));
 
     await store.loadCategories();
 
@@ -341,7 +342,7 @@ describe('CategoriesStore', () => {
   });
 
   it('checkCategoryHasProducts returns repository result', async () => {
-    categoryRepository.categoryHasProducts.mockResolvedValueOnce(true);
+    categoryRepository.categoryHasProducts.mockReturnValueOnce(of(true));
 
     const result = await store.checkCategoryHasProducts(1);
 
@@ -350,7 +351,7 @@ describe('CategoriesStore', () => {
   });
 
   it('checkCategoryHasProducts returns false on error', async () => {
-    categoryRepository.categoryHasProducts.mockRejectedValueOnce(new Error('Error'));
+    categoryRepository.categoryHasProducts.mockReturnValueOnce(throwError(() => new Error('Error')));
 
     const result = await store.checkCategoryHasProducts(1);
 
