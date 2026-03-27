@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '@core/services/auth.service';
 import { CategoryRepository } from '@domain/repositories/category.repository';
 import {
@@ -62,10 +63,10 @@ export class CategoriesStore {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const categories = await this.getCategoriesUseCase.execute();
+      const categories = await firstValueFrom(this.getCategoriesUseCase.execute());
       this.categories.set(categories);
     } catch (err) {
-      this.error.set(this.resolveErrorMessage(err, 'Failed to load categories.'));
+      this.error.set(this.resolveErrorMessage(err, 'No se pudieron cargar las categorías.'));
     } finally {
       this.loading.set(false);
     }
@@ -75,10 +76,10 @@ export class CategoriesStore {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const category = await this.getCategoryByIdUseCase.execute(id);
+      const category = await firstValueFrom(this.getCategoryByIdUseCase.execute(id));
       this.selectedCategory.set(category);
     } catch (err) {
-      this.error.set(this.resolveErrorMessage(err, 'Failed to load category.'));
+      this.error.set(this.resolveErrorMessage(err, 'No se pudo cargar la categoría.'));
     } finally {
       this.loading.set(false);
     }
@@ -87,6 +88,7 @@ export class CategoriesStore {
   openCreateDialog(): void {
     this.selectedCategory.set(null);
     this.dialogMode.set('create');
+    this.error.set(null);
     this.dialogVisible.set(true);
   }
 
@@ -99,12 +101,12 @@ export class CategoriesStore {
     this.error.set(null);
 
     try {
-      const categoryData = await this.getCategoryByIdUseCase.execute(categoryId);
+      const categoryData = await firstValueFrom(this.getCategoryByIdUseCase.execute(categoryId));
       this.selectedCategory.set(categoryData);
       this.dialogMode.set('edit');
       this.dialogVisible.set(true);
     } catch (err) {
-      this.error.set('Error loading category data');
+      this.error.set('Error al cargar los datos de la categoría');
       console.error('Error loading category for edit:', err);
     } finally {
       this.loading.set(false);
@@ -114,6 +116,7 @@ export class CategoriesStore {
   closeDialog(): void {
     this.dialogVisible.set(false);
     this.selectedCategory.set(null);
+    this.error.set(null);
   }
 
   requestDelete(category: Category): void {
@@ -134,21 +137,21 @@ export class CategoriesStore {
     try {
       if (this.dialogMode() === 'edit' && this.selectedCategory()) {
         const payload: UpdateCategoryPayload = { name, description };
-        const updated = await this.updateCategoryUseCase.execute(
+        const updated = await firstValueFrom(this.updateCategoryUseCase.execute(
           this.selectedCategory()!.categoryId,
           payload,
-        );
+        ));
         this.categories.update((list) =>
           list.map((c) => (c.categoryId === updated.categoryId ? updated : c)),
         );
       } else {
         const payload: CreateCategoryPayload = { name, description };
-        const created = await this.createCategoryUseCase.execute(payload);
+        const created = await firstValueFrom(this.createCategoryUseCase.execute(payload));
         this.categories.update((list) => [...list, created]);
       }
       this.closeDialog();
     } catch (err) {
-      this.error.set(this.resolveErrorMessage(err, 'Failed to save category.'));
+      this.error.set(this.resolveErrorMessage(err, 'No se pudo guardar la categoría.'));
     } finally {
       this.loading.set(false);
     }
@@ -161,14 +164,14 @@ export class CategoriesStore {
     this.loading.set(true);
     this.error.set(null);
     try {
-      await this.deleteCategoryUseCase.execute(category.categoryId);
+      await firstValueFrom(this.deleteCategoryUseCase.execute(category.categoryId));
       this.categories.update((list) =>
         list.filter((c) => c.categoryId !== category.categoryId),
       );
       this.confirmDialogVisible.set(false);
       this.categoryToDelete.set(null);
     } catch (err) {
-      this.error.set(this.resolveErrorMessage(err, 'Failed to delete category.'));
+      this.error.set(this.resolveErrorMessage(err, 'No se pudo eliminar la categoría.'));
     } finally {
       this.loading.set(false);
     }
@@ -180,7 +183,7 @@ export class CategoriesStore {
 
   async checkCategoryHasProducts(categoryId: number): Promise<boolean> {
     try {
-      return await this.categoryRepository.categoryHasProducts(categoryId);
+      return await firstValueFrom(this.categoryRepository.categoryHasProducts(categoryId));
     } catch (err) {
       console.error('Error checking category products:', err);
       return false;
