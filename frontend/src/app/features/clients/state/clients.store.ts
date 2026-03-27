@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { UserRole } from '@domain/enums/user-role.enum';
 import { AuthService } from '@core/services/auth.service';
+import { UserRole } from '@domain/enums/user-role.enum';
 import {
   Client,
   ClientDetail,
@@ -15,6 +15,7 @@ import { UpdateClientUseCase } from '@domain/usecases/client/update-client.useca
 import { ToggleClientStatusUseCase } from '@domain/usecases/client/toggle-client-status.usecase';
 import { GetClientByIdUseCase } from '@domain/usecases/client/get-client-by-id.usecase';
 import {
+  ClientAlreadyExistsError,
   ClientApiError,
   ClientForbiddenError,
   ClientNotFoundError,
@@ -44,31 +45,39 @@ export class ClientsStore {
   readonly selectedClient = signal<ClientDetail | null>(null);
   readonly dialogVisible = signal(false);
   readonly dialogMode = signal<DialogMode>('create');
+  readonly dialogError = signal<string | null>(null);
   readonly confirmDialogVisible = signal(false);
   readonly clientToToggle = signal<Client | null>(null);
 
   readonly canEdit = computed(() => {
     const user = this.authService.user();
-    return user?.role === UserRole.Administrator || user?.role === UserRole.Manager;
+    if (user?.role === UserRole.Administrator) return true;
+    return false;
   });
 
   readonly totalPages = computed(() => Math.ceil(this.total() / this.pageSize()));
 
+  readonly clientsView = computed(() => this.clients());
+
   private resolveErrorMessage(err: unknown, fallback: string): string {
+    if (err instanceof ClientAlreadyExistsError) {
+      return 'Ya existe un cliente con este Tax ID.';
+    }
+
     if (err instanceof ClientValidationError) {
-      return err.message || 'Please check the submitted data.';
+      return err.message || 'Revisa los datos introducidos.';
     }
 
     if (err instanceof ClientUnauthorizedError) {
-      return 'Your session has expired. Please sign in again.';
+      return 'Tu sesion ha expirado. Vuelve a iniciar sesion.';
     }
 
     if (err instanceof ClientForbiddenError) {
-      return 'You do not have permissions to perform this action.';
+      return 'No tienes permisos para realizar esta accion.';
     }
 
     if (err instanceof ClientNotFoundError) {
-      return 'The selected client no longer exists.';
+      return 'El cliente seleccionado ya no existe.';
     }
 
     if (err instanceof ClientApiError) {
@@ -92,7 +101,7 @@ export class ClientsStore {
       this.clients.set(result.data);
       this.total.set(result.total);
     } catch (err) {
-      this.error.set(this.resolveErrorMessage(err, 'Failed to load clients.'));
+      this.error.set(this.resolveErrorMessage(err, 'No se pudieron cargar los clientes.'));
     } finally {
       this.loading.set(false);
     }
@@ -105,7 +114,23 @@ export class ClientsStore {
       const client = await firstValueFrom(this.getClientByIdUseCase.execute(id));
       this.selectedClient.set(client);
     } catch (err) {
-      this.error.set(this.resolveErrorMessage(err, 'Failed to load client.'));
+      this.error.set(this.resolveErrorMessage(err, 'No se pudo cargar el cliente.'));
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  private async loadClientDetail(id: number, mode: DialogMode): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    this.dialogError.set(null);
+    try {
+      const client = await firstValueFrom(this.getClientByIdUseCase.execute(id));
+      this.selectedClient.set(client);
+      this.dialogMode.set(mode);
+      this.dialogVisible.set(true);
+    } catch (err) {
+      this.error.set(this.resolveErrorMessage(err, 'No se pudo cargar el detalle del cliente.'));
     } finally {
       this.loading.set(false);
     }
@@ -114,36 +139,22 @@ export class ClientsStore {
   openCreateDialog(): void {
     this.selectedClient.set(null);
     this.dialogMode.set('create');
+    this.dialogError.set(null);
     this.dialogVisible.set(true);
   }
 
-  openEditDialog(client: Client): void {
+  openEditDialog(client: Client | ClientDetail): void {
     this.loadClientDetail(client.clientId, 'edit');
   }
 
-  openViewDialog(client: Client): void {
+  openViewDialog(client: Client | ClientDetail): void {
     this.loadClientDetail(client.clientId, 'view');
-  }
-
-  private async loadClientDetail(clientId: number, mode: DialogMode): Promise<void> {
-    this.loading.set(true);
-    this.error.set(null);
-
-    try {
-      const clientData = await firstValueFrom(this.getClientByIdUseCase.execute(clientId));
-      this.selectedClient.set(clientData);
-      this.dialogMode.set(mode);
-      this.dialogVisible.set(true);
-    } catch (err) {
-      this.error.set(this.resolveErrorMessage(err, 'Failed to load client data.'));
-    } finally {
-      this.loading.set(false);
-    }
   }
 
   closeDialog(): void {
     this.dialogVisible.set(false);
     this.selectedClient.set(null);
+    this.dialogError.set(null);
   }
 
   requestToggleStatus(client: Client): void {
@@ -158,28 +169,42 @@ export class ClientsStore {
 
   async saveClient(payload: CreateClientPayload | UpdateClientPayload): Promise<void> {
     this.loading.set(true);
-    this.error.set(null);
+    this.dialogError.set(null);
     try {
       if (this.dialogMode() === 'edit' && this.selectedClient()) {
-        const updated = await firstValueFrom(
-          this.updateClientUseCase.execute(
-            this.selectedClient()!.clientId,
-            payload as UpdateClientPayload,
-          ),
-        );
+        const updated = await firstValueFrom(this.updateClientUseCase.execute(
+          this.selectedClient()!.clientId,
+          payload as UpdateClientPayload,
+        ));
+
+        const clientSummary: Client = {
+          clientId: updated.clientId,
+          name: updated.name,
+          taxId: updated.taxId,
+          city: updated.city,
+          isActive: updated.isActive,
+        };
+
         this.clients.update((list) =>
-          list.map((c) => (c.clientId === updated.clientId ? updated : c)),
+          list.map((c) => (c.clientId === clientSummary.clientId ? clientSummary : c)),
         );
       } else {
-        const created = await firstValueFrom(
-          this.createClientUseCase.execute(payload as CreateClientPayload),
-        );
-        this.clients.update((list) => [...list, created]);
+        const created = await firstValueFrom(this.createClientUseCase.execute(payload as CreateClientPayload));
+
+        const clientSummary: Client = {
+          clientId: created.clientId,
+          name: created.name,
+          taxId: created.taxId,
+          city: created.city,
+          isActive: created.isActive,
+        };
+
+        this.clients.update((list) => [...list, clientSummary]);
         this.total.update((t) => t + 1);
       }
       this.closeDialog();
     } catch (err) {
-      this.error.set(this.resolveErrorMessage(err, 'Failed to save client.'));
+      this.dialogError.set(this.resolveErrorMessage(err, 'No se pudo guardar el cliente.'));
     } finally {
       this.loading.set(false);
     }
@@ -199,7 +224,7 @@ export class ClientsStore {
       this.confirmDialogVisible.set(false);
       this.clientToToggle.set(null);
     } catch (err) {
-      this.error.set(this.resolveErrorMessage(err, 'Failed to update client status.'));
+      this.error.set(this.resolveErrorMessage(err, 'No se pudo actualizar el estado del cliente.'));
     } finally {
       this.loading.set(false);
     }
