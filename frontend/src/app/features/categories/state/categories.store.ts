@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '@core/services/auth.service';
+import { UserRole } from '@domain/enums/user-role.enum';
 import { CategoryRepository } from '@domain/repositories/category.repository';
 import {
   Category,
@@ -37,7 +38,7 @@ export class CategoriesStore {
 
   readonly canEdit = computed(() => {
     const user = this.authService.user();
-    return user?.role === 'Administrator' || user?.role === 'Sales Manager';
+    return user?.role === UserRole.Administrator || user?.role === UserRole.Manager;
   });
 
   readonly filteredCategories = computed(() => {
