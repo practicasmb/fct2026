@@ -48,6 +48,7 @@ def make_sale(**kwargs) -> MagicMock:
         "sale_id": 1,
         "sale_number": "VEN-2026-0001",
         "client_id": 5,
+        "client_name": "Cliente Test S.L.",
         "delivery_address": "Calle Mayor 1, Madrid, Madrid, 28001",
         "user_id": 2,
         "sale_date": datetime(2026, 4, 6, tzinfo=UTC),
