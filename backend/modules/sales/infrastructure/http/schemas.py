@@ -45,6 +45,7 @@ class SaleDetailDTO(BaseModel):
     sale_id: int
     sale_number: str
     client_id: int
+    client_name: str | None
     delivery_address: str
     user_id: int
     sale_date: datetime
@@ -62,6 +63,7 @@ class SaleDetailDTO(BaseModel):
             sale_id=sale.sale_id,
             sale_number=sale.sale_number,
             client_id=sale.client_id,
+            client_name=getattr(sale, "client_name", None),
             delivery_address=sale.delivery_address,
             user_id=sale.user_id,
             sale_date=sale.sale_date,

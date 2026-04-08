@@ -82,8 +82,18 @@ class SaleRepository(ISaleRepository):
         return sale
 
     async def get_by_id(self, sale_id: int) -> Sale | None:
-        result = await self._db.execute(select(Sale).where(Sale.sale_id == sale_id))
-        return result.scalar_one_or_none()
+        result = await self._db.execute(
+            select(Sale, clients_table.c.name.label("client_name"))
+            .outerjoin(clients_table, Sale.client_id == clients_table.c.client_id)
+            .where(Sale.sale_id == sale_id)
+        )
+        row = result.one_or_none()
+        if row is None:
+            return None
+
+        sale, client_name = row
+        setattr(sale, "client_name", client_name)
+        return sale
 
     async def get_all_paginated(
         self,
