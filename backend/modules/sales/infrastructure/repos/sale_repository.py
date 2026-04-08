@@ -10,6 +10,7 @@ from modules.sales.domain.interfaces.repositories.i_sale_repository import (
     ISaleRepository,
 )
 from shared.domain.dtos.paginated_result import PaginatedResult
+from shared.domain.interfaces.i_sale_reader import ISaleReader
 from shared.infrastructure.database.read_tables import clients_table
 
 SORT_FIELDS = {
@@ -22,7 +23,7 @@ SORT_FIELDS = {
 }
 
 
-class SaleRepository(ISaleRepository):
+class SaleRepository(ISaleRepository, ISaleReader):
     def __init__(self, db: AsyncSession) -> None:
         self._db = db
 
@@ -148,3 +149,9 @@ class SaleRepository(ISaleRepository):
         items = list(result.all())
 
         return PaginatedResult(items=items, total=total, page=page, page_size=page_size)
+
+    async def has_sales_for_user(self, user_id: int) -> bool:
+        result = await self._db.execute(
+            select(func.count()).select_from(Sale).where(Sale.user_id == user_id)
+        )
+        return result.scalar_one() > 0

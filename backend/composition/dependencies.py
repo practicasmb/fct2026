@@ -451,7 +451,7 @@ async def get_activate_user_use_case(
 async def get_delete_user_use_case(
     db: AsyncSession = Depends(get_db),
 ) -> IDeleteUserUseCase:
-    return DeleteUserUseCase(UserRepository(db), PurchaseRepository(db))
+    return DeleteUserUseCase(UserRepository(db), PurchaseRepository(db), SaleRepository(db))
 
 
 async def get_list_categories_use_case(
