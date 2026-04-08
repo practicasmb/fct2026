@@ -4,17 +4,17 @@ from decimal import Decimal
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from modules.clients.domain.entities.client import Client
 from modules.sales.domain.entities.sale import Sale
 from modules.sales.domain.entities.sale_line import SaleLine
 from modules.sales.domain.interfaces.repositories.i_sale_repository import (
     ISaleRepository,
 )
 from shared.domain.dtos.paginated_result import PaginatedResult
+from shared.infrastructure.database.read_tables import clients_table
 
 SORT_FIELDS = {
     "sale_number": Sale.sale_number,
-    "client_name": Client.name,
+    "client_name": clients_table.c.name,
     "status": Sale.status,
     "sale_date": Sale.sale_date,
     "total": Sale.total,
@@ -100,7 +100,9 @@ class SaleRepository(ISaleRepository):
         filters = []
         if search:
             pattern = f"%{search}%"
-            filters.append(Sale.sale_number.ilike(pattern) | Client.name.ilike(pattern))
+            filters.append(
+                Sale.sale_number.ilike(pattern) | clients_table.c.name.ilike(pattern)
+            )
         if status:
             filters.append(Sale.status == status)
         if client_id:
@@ -113,7 +115,7 @@ class SaleRepository(ISaleRepository):
         count_stmt = (
             select(func.count())
             .select_from(Sale)
-            .outerjoin(Client, Sale.client_id == Client.client_id)
+            .outerjoin(clients_table, Sale.client_id == clients_table.c.client_id)
             .where(*filters)
         )
         total_result = await self._db.execute(count_stmt)
@@ -124,8 +126,8 @@ class SaleRepository(ISaleRepository):
         offset = (page - 1) * page_size
 
         data_stmt = (
-            select(Sale, Client.name.label("client_name"))
-            .outerjoin(Client, Sale.client_id == Client.client_id)
+            select(Sale, clients_table.c.name.label("client_name"))
+            .outerjoin(clients_table, Sale.client_id == clients_table.c.client_id)
             .where(*filters)
             .order_by(order_expr)
             .limit(page_size)
