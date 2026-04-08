@@ -79,6 +79,53 @@ async def test_delete_user_has_purchases(
     assert response.json()["error_code"] == 1205
 
 
+async def test_delete_user_has_sales(
+    admin_client: AsyncClient, db_session: AsyncSession
+):
+    from decimal import Decimal
+
+    from modules.clients.domain.entities.client import Client
+    from modules.sales.domain.entities.sale import Sale
+
+    user = User(
+        first_name="Seller",
+        last_name="User",
+        email="seller@example.com",
+        role="Employee",
+        is_active=True,
+    )
+    db_session.add(user)
+    client = Client(
+        name="Test Client",
+        tax_id="12345678Z",
+        address="123 Main St",
+        city="Barcelona",
+        province="Catalonia",
+        postal_code="08001",
+        phone="123456789",
+        email="client@example.com",
+    )
+    db_session.add(client)
+    await db_session.flush()
+
+    sale = Sale(
+        sale_number="VEN-TEST-001",
+        client_id=client.client_id,
+        delivery_address="123 Main St",
+        user_id=user.user_id,
+        status="Pending",
+        subtotal=Decimal("100.00"),
+        taxes=Decimal("21.00"),
+        total=Decimal("121.00"),
+    )
+    db_session.add(sale)
+    await db_session.flush()
+
+    response = await admin_client.delete(f"/api/v1/admin/users/{user.user_id}")
+    assert response.status_code == 409
+    assert response.json()["error_code"] == 1205
+
+
 async def test_delete_user_unauthorized(unauthenticated_client: AsyncClient):
     response = await unauthenticated_client.delete("/api/v1/admin/users/1")
     assert response.status_code == 401
