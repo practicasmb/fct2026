@@ -30,6 +30,7 @@ router = APIRouter(prefix="/sales")
 
 
 
+
 @router.post("", response_model=SaleDetailDTO, status_code=201, tags=["Sales"])
 async def create_sale(
     body: CreateSaleRequest,
