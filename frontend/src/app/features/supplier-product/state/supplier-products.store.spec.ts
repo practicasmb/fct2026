@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { AuthService } from '@core/services/auth.service';
+import { UserPermission } from '@domain/enums/user-permission.enum';
 import {
   AddSupplierProductRequest,
   ImportResult,
@@ -42,7 +43,15 @@ class MockAuthService {
     displayName: 'Admin',
     photoURL: null,
     role: 'Administrator' as const,
+    permissions: [UserPermission.Admin],
   });
+
+  readonly permissions = signal([UserPermission.Admin]);
+
+  hasPermission(permission: UserPermission | UserPermission[]): boolean {
+    const requiredPermissions = Array.isArray(permission) ? permission : [permission];
+    return requiredPermissions.some((perm) => (this.permissions() as UserPermission[]).includes(perm));
+  }
 }
 
 class MockGetSupplierProductsUseCase {
@@ -71,12 +80,14 @@ class MockDownloadTemplateUseCase {
 
 describe('SupplierProductsStore', () => {
   let store: SupplierProductsStore;
+  let authServiceMock: MockAuthService;
   let getSupplierProductsUseCase: MockGetSupplierProductsUseCase;
   let addProductToSupplierUseCase: MockAddProductToSupplierUseCase;
   let importSupplierProductsUseCase: MockImportSupplierProductsUseCase;
   let downloadTemplateUseCase: MockDownloadTemplateUseCase;
 
   beforeEach(() => {
+    authServiceMock = new MockAuthService();
     getSupplierProductsUseCase = new MockGetSupplierProductsUseCase();
     addProductToSupplierUseCase = new MockAddProductToSupplierUseCase();
     importSupplierProductsUseCase = new MockImportSupplierProductsUseCase();
@@ -85,7 +96,7 @@ describe('SupplierProductsStore', () => {
     TestBed.configureTestingModule({
       providers: [
         SupplierProductsStore,
-        { provide: AuthService, useValue: new MockAuthService() },
+        { provide: AuthService, useValue: authServiceMock },
         { provide: GetSupplierProductsUseCase, useValue: getSupplierProductsUseCase },
         { provide: AddProductToSupplierUseCase, useValue: addProductToSupplierUseCase },
         { provide: UpdateSupplierProductPriceUseCase, useValue: new MockUpdateSupplierProductPriceUseCase() },
@@ -114,6 +125,21 @@ describe('SupplierProductsStore', () => {
     expect(store.supplierProducts()).toEqual([SUPPLIER_PRODUCT_A, SUPPLIER_PRODUCT_B]);
     expect(store.supplierTotal()).toBe(2);
     expect(store.error()).toBeNull();
+  });
+
+  it('canModify es true para Purchases Manager', () => {
+    authServiceMock.permissions.set([UserPermission.PurchasesManager]);
+
+    expect(store.canModify()).toBe(true);
+  });
+
+  it('bloquea acciones de modificacion sin permisos', () => {
+    authServiceMock.permissions.set([UserPermission.PurchasesDepartment]);
+
+    store.openAddProductDialog();
+
+    expect(store.addProductDialogVisible()).toBe(false);
+    expect(store.error()).toBe('No tiene permisos para realizar esta accion.');
   });
 
   it('no agrega producto si no hay supplier seleccionado', async () => {

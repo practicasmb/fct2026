@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '@core/services/auth.service';
+import { UserPermission } from '@domain/enums/user-permission.enum';
 import {
   AddSupplierProductRequest,
   ImportResult,
@@ -53,10 +54,9 @@ export class SupplierProductsStore {
   readonly importing = signal(false);
   readonly downloadingTemplate = signal(false);
 
-  readonly canModify = computed(() => {
-    const role = this.authService.user()?.role;
-    return role === 'Administrator' || role === 'Manager';
-  });
+  readonly canModify = computed(() =>
+    this.authService.hasPermission([UserPermission.Admin, UserPermission.PurchasesManager])
+  );
 
   readonly supplierTotalPages = computed(() => Math.ceil(this.supplierTotal() / this.supplierPageSize()));
 
@@ -73,6 +73,7 @@ export class SupplierProductsStore {
         'Invalid supplier ID.': 'ID de proveedor invalido.',
         'Invalid product ID.': 'ID de producto invalido.',
         'Supplier price must be greater than zero.': 'El precio del proveedor debe ser mayor que cero.',
+        'Supplier price must be greater than zero': 'El precio del proveedor debe ser mayor que cero.',
         'Excel file is required for import.': 'Se requiere archivo Excel para importar.',
         'Invalid price.': 'Precio invalido.',
         'Page must be greater than 0.': 'La pagina debe ser mayor que 0.',
@@ -128,6 +129,15 @@ export class SupplierProductsStore {
     return currentSupplierProduct;
   }
 
+  private ensureCanModify(): boolean {
+    if (this.canModify()) {
+      return true;
+    }
+
+    this.error.set('No tiene permisos para realizar esta accion.');
+    return false;
+  }
+
   private async fetchSupplierProducts(supplierId: number): Promise<void> {
     const result = await firstValueFrom(this.getSupplierProductsUseCase.execute(supplierId, this.buildQueryParams()));
     this.supplierProducts.set(result.data);
@@ -168,6 +178,10 @@ export class SupplierProductsStore {
   }
 
   openAddProductDialog(): void {
+    if (!this.ensureCanModify()) {
+      return;
+    }
+
     this.selectedSupplierProduct.set(null);
     this.addProductDialogVisible.set(true);
   }
@@ -179,6 +193,10 @@ export class SupplierProductsStore {
 
   async addProductToSupplier(request: AddSupplierProductRequest): Promise<void> {
     this.error.set(null);
+
+    if (!this.ensureCanModify()) {
+      return;
+    }
 
     const currentSupplierId = this.requireSupplierId('No hay proveedor seleccionado.');
     if (!currentSupplierId) {
@@ -201,6 +219,10 @@ export class SupplierProductsStore {
   }
 
   openEditProductPriceDialog(supplierProduct: SupplierProduct): void {
+    if (!this.ensureCanModify()) {
+      return;
+    }
+
     this.selectedSupplierProduct.set(supplierProduct);
     this.editProductPriceDialogVisible.set(true);
   }
@@ -212,6 +234,10 @@ export class SupplierProductsStore {
 
   async updatePrice(request: UpdateSupplierProductPriceRequest): Promise<void> {
     this.error.set(null);
+
+    if (!this.ensureCanModify()) {
+      return;
+    }
 
     const currentSupplierId = this.requireSupplierId('No hay proveedor seleccionado.');
     const currentSupplierProduct = this.requireSelectedSupplierProduct('No hay producto seleccionado.');
@@ -241,6 +267,10 @@ export class SupplierProductsStore {
   }
 
   requestDeleteProduct(supplierProduct: SupplierProduct): void {
+    if (!this.ensureCanModify()) {
+      return;
+    }
+
     this.selectedSupplierProduct.set(supplierProduct);
     this.confirmDeleteProductDialogVisible.set(true);
   }
@@ -252,6 +282,10 @@ export class SupplierProductsStore {
 
   async confirmDelete(): Promise<void> {
     this.error.set(null);
+
+    if (!this.ensureCanModify()) {
+      return;
+    }
 
     const currentSupplierId = this.requireSupplierId('No hay proveedor seleccionado.');
     const currentSupplierProduct = this.requireSelectedSupplierProduct('No hay producto seleccionado.');
@@ -293,6 +327,10 @@ export class SupplierProductsStore {
   }
 
   openImportDialog(): void {
+    if (!this.ensureCanModify()) {
+      return;
+    }
+
     this.importResult.set(null);
     this.importDialogVisible.set(true);
   }
@@ -303,6 +341,10 @@ export class SupplierProductsStore {
 
   async importProducts(request: ImportSupplierProductsRequest): Promise<void> {
     this.error.set(null);
+
+    if (!this.ensureCanModify()) {
+      return;
+    }
 
     const currentSupplierId = this.requireSupplierId('No hay proveedor seleccionado.');
     if (!currentSupplierId) {
@@ -329,6 +371,10 @@ export class SupplierProductsStore {
 
   async downloadTemplate(): Promise<void> {
     this.error.set(null);
+
+    if (!this.ensureCanModify()) {
+      return;
+    }
 
     const currentSupplierId = this.requireSupplierId('No hay proveedor seleccionado.');
     if (!currentSupplierId) {
