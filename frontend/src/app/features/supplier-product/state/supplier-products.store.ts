@@ -79,7 +79,6 @@ export class SupplierProductsStore {
         'Page must be greater than 0.': 'La pagina debe ser mayor que 0.',
         'Page size must be between 1 and 100.': 'El tamano de pagina debe estar entre 1 y 100.',
         'Supplier price must be greater than 0': 'El precio del proveedor debe ser mayor que cero.',
-        'Supplier price must be less than 999999.99': 'El precio del proveedor debe ser menor que 999999.99.',
         'Supplier price must have maximum 2 decimal places': 'El precio del proveedor debe tener maximo 2 decimales.',
       };
 
