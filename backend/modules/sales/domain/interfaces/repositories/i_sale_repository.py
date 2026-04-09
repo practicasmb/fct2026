@@ -28,6 +28,18 @@ class ISaleRepository(ABC):
     async def get_by_id(self, sale_id: int) -> Sale | None: ...
 
     @abstractmethod
+    async def replace_lines(self, sale_id: int, lines: list[dict]) -> None: ...
+
+    @abstractmethod
+    async def update_totals(
+        self,
+        sale_id: int,
+        subtotal: Decimal,
+        taxes: Decimal,
+        total: Decimal,
+    ) -> Sale: ...
+
+    @abstractmethod
     async def get_all_paginated(
         self,
         page: int,

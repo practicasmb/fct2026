@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import func, select, text
+from sqlalchemy import delete, func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.sales.domain.entities.sale import Sale
@@ -72,6 +72,7 @@ class SaleRepository(ISaleRepository, ISaleReader):
                 product_id=line["product_id"],
                 quantity=line["quantity"],
                 unit_price=line["unit_price"],
+                discount=line.get("discount", Decimal("0")),
                 vat_rate=line["vat_rate"],
                 line_subtotal=line["line_subtotal"],
                 line_tax=line["line_tax"],
@@ -93,6 +94,46 @@ class SaleRepository(ISaleRepository, ISaleReader):
             return None
 
         sale, client_name = row
+        setattr(sale, "client_name", client_name)
+        return sale
+
+    async def replace_lines(self, sale_id: int, lines: list[dict]) -> None:
+        await self._db.execute(delete(SaleLine).where(SaleLine.sale_id == sale_id))
+        for line in lines:
+            sale_line = SaleLine(
+                sale_id=sale_id,
+                product_id=line["product_id"],
+                quantity=line["quantity"],
+                unit_price=line["unit_price"],
+                discount=line.get("discount", Decimal("0")),
+                vat_rate=line["vat_rate"],
+                line_subtotal=line["line_subtotal"],
+                line_tax=line["line_tax"],
+            )
+            self._db.add(sale_line)
+        await self._db.flush()
+
+    async def update_totals(
+        self,
+        sale_id: int,
+        subtotal: Decimal,
+        taxes: Decimal,
+        total: Decimal,
+    ) -> Sale:
+        await self._db.execute(
+            update(Sale)
+            .where(Sale.sale_id == sale_id)
+            .values(subtotal=subtotal, taxes=taxes, total=total)
+        )
+        await self._db.flush()
+        result = await self._db.execute(
+            select(Sale, clients_table.c.name.label("client_name"))
+            .outerjoin(clients_table, Sale.client_id == clients_table.c.client_id)
+            .where(Sale.sale_id == sale_id)
+        )
+        row = result.one()
+        sale, client_name = row
+        await self._db.refresh(sale, ["lines"])
         setattr(sale, "client_name", client_name)
         return sale
 
