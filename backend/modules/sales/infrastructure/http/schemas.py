@@ -20,6 +20,12 @@ class CreateSaleRequest(BaseModel):
     lines: list[SaleLineInput] = Field(min_length=1)
 
 
+class UpdateSaleRequest(BaseModel):
+    client_id: int
+    delivery_address: str = Field(min_length=1)
+    lines: list[SaleLineInput] = Field(min_length=1)
+
+
 class SaleLineResponse(BaseModel):
     sale_line_id: int
     sale_id: int
@@ -48,6 +54,7 @@ class SaleDetailDTO(BaseModel):
     client_name: str | None
     delivery_address: str
     user_id: int
+    created_by_name: str | None = None
     sale_date: datetime
     status: str
     subtotal: Decimal

@@ -51,6 +51,7 @@ def make_sale(**kwargs) -> MagicMock:
         "client_name": "Cliente Test S.L.",
         "delivery_address": "Calle Mayor 1, Madrid, Madrid, 28001",
         "user_id": 2,
+        "created_by_name": "Sales Employee",
         "sale_date": datetime(2026, 4, 6, tzinfo=UTC),
         "status": "Pending",
         "subtotal": Decimal("100.00"),

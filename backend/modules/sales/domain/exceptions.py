@@ -16,6 +16,12 @@ class SaleExceptionInfo(AppExceptionInfo):
     PRODUCT_NOT_ACTIVE = (8105, "Product is not active", 422)
     INSUFFICIENT_STOCK = (8106, "Insufficient stock for product", 422)
     EMPTY_SALE_LINES = (8107, "At least one sale line is required", 422)
+    SALE_NOT_PENDING = (
+        8108,
+        "Sale must be in Pending status to be edited",
+        400,
+    )
+    DELIVERY_ADDRESS_REQUIRED = (8109, "Delivery address is required", 422)
 
 
 class SaleException(AppException):

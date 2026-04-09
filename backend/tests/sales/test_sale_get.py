@@ -23,6 +23,7 @@ async def test_get_sale_success(sales_client: AsyncClient):
     assert body["client_id"] == 5
     assert body["client_name"] == "Cliente Test S.L."
     assert body["user_id"] == 2
+    assert body["created_by_name"] == "Sales Employee"
     assert len(body["lines"]) == 1
 
 
