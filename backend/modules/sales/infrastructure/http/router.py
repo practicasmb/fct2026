@@ -1,17 +1,25 @@
 from datetime import datetime
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 
 from composition.dependencies import (
+    get_cancel_sale_use_case,
     get_create_sale_use_case,
+    get_delete_sale_use_case,
     get_get_sale_use_case,
     get_list_sales_use_case,
     get_update_sale_use_case,
 )
 from composition.security import require_sales_department_or_admin
+from modules.sales.domain.interfaces.use_cases.i_cancel_sale_use_case import (
+    ICancelSaleUseCase,
+)
 from modules.sales.domain.interfaces.use_cases.i_create_sale_use_case import (
     ICreateSaleUseCase,
+)
+from modules.sales.domain.interfaces.use_cases.i_delete_sale_use_case import (
+    IDeleteSaleUseCase,
 )
 from modules.sales.domain.interfaces.use_cases.i_get_sale_use_case import (
     IGetSaleUseCase,
@@ -130,3 +138,25 @@ async def update_sale(
         lines=[line.model_dump() for line in body.lines],
     )
     return SaleDetailDTO.from_entity(sale)
+
+
+@router.patch("/{sale_id}/cancel", response_model=SaleDetailDTO, tags=["Sales"])
+async def cancel_sale(
+    sale_id: int,
+    current_user: UserSession = Depends(require_sales_department_or_admin),
+    use_case: ICancelSaleUseCase = Depends(get_cancel_sale_use_case),
+):
+    """Cancel a sale when it is in Pending or Approved status."""
+    sale = await use_case.execute(sale_id=sale_id, user_id=current_user.user_id)
+    return SaleDetailDTO.from_entity(sale)
+
+
+@router.delete("/{sale_id}", status_code=204, tags=["Sales"])
+async def delete_sale(
+    sale_id: int,
+    _: UserSession = Depends(require_sales_department_or_admin),
+    use_case: IDeleteSaleUseCase = Depends(get_delete_sale_use_case),
+):
+    """Physically delete a sale when it is still in Pending status."""
+    await use_case.execute(sale_id=sale_id)
+    return Response(status_code=204)
