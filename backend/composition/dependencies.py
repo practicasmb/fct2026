@@ -222,6 +222,7 @@ from modules.purchases.infrastructure.repos.purchase_repository import (
 from modules.sales.application.create_sale_use_case import CreateSaleUseCase
 from modules.sales.application.get_sale_use_case import GetSaleUseCase
 from modules.sales.application.list_sales_use_case import ListSalesUseCase
+from modules.sales.application.update_sale_lines_use_case import UpdateSaleLinesUseCase
 from modules.sales.domain.interfaces.use_cases.i_create_sale_use_case import (
     ICreateSaleUseCase,
 )
@@ -230,6 +231,9 @@ from modules.sales.domain.interfaces.use_cases.i_get_sale_use_case import (
 )
 from modules.sales.domain.interfaces.use_cases.i_list_sales_use_case import (
     IListSalesUseCase,
+)
+from modules.sales.domain.interfaces.use_cases.i_update_sale_lines_use_case import (
+    IUpdateSaleLinesUseCase,
 )
 from modules.sales.infrastructure.repos.sale_repository import SaleRepository
 from modules.suppliers.application.add_product_to_supplier_use_case import (
@@ -451,7 +455,7 @@ async def get_activate_user_use_case(
 async def get_delete_user_use_case(
     db: AsyncSession = Depends(get_db),
 ) -> IDeleteUserUseCase:
-    return DeleteUserUseCase(UserRepository(db), PurchaseRepository(db))
+    return DeleteUserUseCase(UserRepository(db), PurchaseRepository(db), SaleRepository(db))
 
 
 async def get_list_categories_use_case(
@@ -741,6 +745,16 @@ async def get_get_sale_use_case(
     db: AsyncSession = Depends(get_db),
 ) -> IGetSaleUseCase:
     return GetSaleUseCase(SaleRepository(db))
+
+
+async def get_update_sale_lines_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> IUpdateSaleLinesUseCase:
+    return UpdateSaleLinesUseCase(
+        SaleRepository(db),
+        ProductRepository(db),
+        ProductStockUpdater(db),
+    )
 
 
 # ── Warehouse ──────────────────────────────────────────────────────

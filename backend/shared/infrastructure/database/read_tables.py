@@ -25,3 +25,10 @@ suppliers_table = Table(
     Column("supplier_id", Integer, primary_key=True),
     Column("name", String),
 )
+
+clients_table = Table(
+    "clients",
+    READ_METADATA,
+    Column("client_id", Integer, primary_key=True),
+    Column("name", String),
+)
