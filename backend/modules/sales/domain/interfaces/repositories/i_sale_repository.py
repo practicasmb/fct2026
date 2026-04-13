@@ -40,6 +40,17 @@ class ISaleRepository(ABC):
     ) -> Sale: ...
 
     @abstractmethod
+    async def cancel(
+        self,
+        sale_id: int,
+        cancelled_at: datetime,
+        cancelled_by_user_id: int,
+    ) -> Sale: ...
+
+    @abstractmethod
+    async def delete(self, sale_id: int) -> None: ...
+
+    @abstractmethod
     async def get_all_paginated(
         self,
         page: int,

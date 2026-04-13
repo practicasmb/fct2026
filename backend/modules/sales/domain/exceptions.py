@@ -22,6 +22,12 @@ class SaleExceptionInfo(AppExceptionInfo):
         400,
     )
     DELIVERY_ADDRESS_REQUIRED = (8109, "Delivery address is required", 422)
+    SALE_NOT_CANCELLABLE = (
+        8110,
+        "Sale must be in Pending or Approved status to be cancelled",
+        400,
+    )
+    SALE_NOT_DELETABLE = (8111, "Only Pending sales can be deleted", 400)
 
 
 class SaleException(AppException):

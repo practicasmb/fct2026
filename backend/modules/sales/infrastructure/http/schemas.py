@@ -55,11 +55,14 @@ class SaleDetailDTO(BaseModel):
     delivery_address: str
     user_id: int
     created_by_name: str | None = None
+    cancelled_by_user_id: int | None = None
+    cancelled_by_name: str | None = None
     sale_date: datetime
     status: str
     subtotal: Decimal
     taxes: Decimal
     total: Decimal
+    cancelled_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
     lines: list[SaleLineResponse]

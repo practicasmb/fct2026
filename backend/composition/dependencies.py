@@ -203,12 +203,20 @@ from modules.purchases.infrastructure.repos.purchase_reader import PurchaseReade
 from modules.purchases.infrastructure.repos.purchase_repository import (
     PurchaseRepository,
 )
+from modules.sales.application.cancel_sale_use_case import CancelSaleUseCase
 from modules.sales.application.create_sale_use_case import CreateSaleUseCase
+from modules.sales.application.delete_sale_use_case import DeleteSaleUseCase
 from modules.sales.application.get_sale_use_case import GetSaleUseCase
 from modules.sales.application.list_sales_use_case import ListSalesUseCase
 from modules.sales.application.update_sale_use_case import UpdateSaleUseCase
+from modules.sales.domain.interfaces.use_cases.i_cancel_sale_use_case import (
+    ICancelSaleUseCase,
+)
 from modules.sales.domain.interfaces.use_cases.i_create_sale_use_case import (
     ICreateSaleUseCase,
+)
+from modules.sales.domain.interfaces.use_cases.i_delete_sale_use_case import (
+    IDeleteSaleUseCase,
 )
 from modules.sales.domain.interfaces.use_cases.i_get_sale_use_case import (
     IGetSaleUseCase,
@@ -702,6 +710,26 @@ async def get_update_sale_use_case(
     return UpdateSaleUseCase(
         SaleRepository(db),
         ClientRepository(db),
+        ProductRepository(db),
+        ProductStockUpdater(db),
+    )
+
+
+async def get_cancel_sale_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> ICancelSaleUseCase:
+    return CancelSaleUseCase(
+        SaleRepository(db),
+        ProductRepository(db),
+        ProductStockUpdater(db),
+    )
+
+
+async def get_delete_sale_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> IDeleteSaleUseCase:
+    return DeleteSaleUseCase(
+        SaleRepository(db),
         ProductRepository(db),
         ProductStockUpdater(db),
     )

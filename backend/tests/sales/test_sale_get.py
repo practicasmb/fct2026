@@ -24,6 +24,9 @@ async def test_get_sale_success(sales_client: AsyncClient):
     assert body["client_name"] == "Cliente Test S.L."
     assert body["user_id"] == 2
     assert body["created_by_name"] == "Sales Employee"
+    assert body["cancelled_at"] is None
+    assert body["cancelled_by_user_id"] is None
+    assert body["cancelled_by_name"] is None
     assert len(body["lines"]) == 1
 
 
@@ -88,6 +91,29 @@ async def test_get_sale_not_found(sales_client: AsyncClient):
     response = await sales_client.get("/api/v1/sales/999")
     del app.dependency_overrides[get_get_sale_use_case]
     assert response.status_code == 404
+
+
+async def test_get_sale_includes_cancellation_fields(sales_client: AsyncClient):
+    from datetime import UTC, datetime
+
+    sale = make_sale(
+        status="Cancelled",
+        cancelled_at=datetime(2026, 4, 10, 12, 0, tzinfo=UTC),
+        cancelled_by_user_id=2,
+        cancelled_by_name="Sales Employee",
+    )
+    mock = MagicMock()
+    mock.execute = AsyncMock(return_value=sale)
+    app.dependency_overrides[get_get_sale_use_case] = lambda: mock
+    response = await sales_client.get("/api/v1/sales/1")
+    del app.dependency_overrides[get_get_sale_use_case]
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "Cancelled"
+    assert body["cancelled_at"].startswith("2026-04-10T12:00:00")
+    assert body["cancelled_by_user_id"] == 2
+    assert body["cancelled_by_name"] == "Sales Employee"
 
 
 async def test_get_sale_unauthenticated(unauthenticated_client: AsyncClient):

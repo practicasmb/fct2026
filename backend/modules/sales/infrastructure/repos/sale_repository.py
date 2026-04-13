@@ -139,6 +139,36 @@ class SaleRepository(ISaleRepository, ISaleReader):
         updated_sale = await self.get_by_id(sale_id)
         return updated_sale if updated_sale is not None else sale
 
+    async def cancel(
+        self,
+        sale_id: int,
+        cancelled_at: datetime,
+        cancelled_by_user_id: int,
+    ) -> Sale:
+        result = await self._db.execute(select(Sale).where(Sale.sale_id == sale_id))
+        sale = result.scalar_one()
+        sale.status = "Cancelled"
+        sale.cancelled_at = cancelled_at
+        sale.cancelled_by_user_id = cancelled_by_user_id
+        await self._db.flush()
+        updated_sale = await self.get_by_id(sale_id)
+        return updated_sale if updated_sale is not None else sale
+
+    async def delete(self, sale_id: int) -> None:
+        sale_result = await self._db.execute(
+            select(Sale).where(Sale.sale_id == sale_id)
+        )
+        sale = sale_result.scalar_one()
+
+        existing_lines_result = await self._db.execute(
+            select(SaleLine).where(SaleLine.sale_id == sale_id)
+        )
+        for existing_line in existing_lines_result.scalars().all():
+            await self._db.delete(existing_line)
+
+        await self._db.delete(sale)
+        await self._db.flush()
+
     async def get_all_paginated(
         self,
         page: int,

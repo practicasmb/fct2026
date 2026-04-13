@@ -20,4 +20,9 @@ class GetSaleUseCase(IGetSaleUseCase):
             raise SaleException(SaleExceptionInfo.SALE_NOT_FOUND)
         created_by_name = await self._user_reader.get_name_by_id(sale.user_id)
         setattr(sale, "created_by_name", created_by_name)
+        if sale.cancelled_by_user_id is not None:
+            cancelled_by_name = await self._user_reader.get_name_by_id(
+                sale.cancelled_by_user_id
+            )
+            setattr(sale, "cancelled_by_name", cancelled_by_name)
         return sale
