@@ -1,3 +1,4 @@
+from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock
 
 from httpx import AsyncClient
@@ -68,8 +69,38 @@ async def test_create_sale_line_details(sales_client: AsyncClient):
     assert line["product_id"] == 10
     assert line["quantity"] == 2
     assert float(line["unit_price"]) == 50.00
+    assert float(line["discount"]) == 0.00
     assert float(line["vat_rate"]) == 0.21
     assert float(line["line_tax"]) == 21.00
+
+
+async def test_create_sale_with_discount(sales_client: AsyncClient):
+    from tests.sales.conftest import make_sale_line
+
+    discounted_line = make_sale_line(
+        discount=Decimal("10.00"),
+        line_subtotal=Decimal("90.00"),
+        line_tax=Decimal("18.90"),
+    )
+    sale = make_sale(
+        subtotal=Decimal("90.00"),
+        taxes=Decimal("18.90"),
+        total=Decimal("108.90"),
+        lines=[discounted_line],
+    )
+    mock = MagicMock()
+    mock.execute = AsyncMock(return_value=sale)
+    app.dependency_overrides[get_create_sale_use_case] = lambda: mock
+    body = {
+        "client_id": 5,
+        "lines": [{"product_id": 10, "quantity": 2, "discount": "10.00"}],
+    }
+    response = await sales_client.post("/api/v1/sales", json=body)
+    del app.dependency_overrides[get_create_sale_use_case]
+    assert response.status_code == 201
+    line = response.json()["lines"][0]
+    assert float(line["discount"]) == 10.00
+    assert float(line["line_subtotal"]) == 90.00
 
 
 async def test_create_sale_insufficient_stock(sales_client: AsyncClient):

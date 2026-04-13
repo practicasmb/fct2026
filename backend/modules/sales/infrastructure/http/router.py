@@ -7,6 +7,7 @@ from composition.dependencies import (
     get_create_sale_use_case,
     get_get_sale_use_case,
     get_list_sales_use_case,
+    get_update_sale_lines_use_case,
 )
 from composition.security import require_sales_department_or_admin
 from modules.sales.domain.interfaces.use_cases.i_create_sale_use_case import (
@@ -18,10 +19,14 @@ from modules.sales.domain.interfaces.use_cases.i_get_sale_use_case import (
 from modules.sales.domain.interfaces.use_cases.i_list_sales_use_case import (
     IListSalesUseCase,
 )
+from modules.sales.domain.interfaces.use_cases.i_update_sale_lines_use_case import (
+    IUpdateSaleLinesUseCase,
+)
 from modules.sales.infrastructure.http.schemas import (
     CreateSaleRequest,
     SaleDetailDTO,
     SaleDTO,
+    UpdateSaleLinesRequest,
 )
 from shared.domain.dtos.user_session import UserSession
 from shared.infrastructure.http.paginated_response import PaginatedResponse
@@ -109,4 +114,19 @@ async def get_sale(
 ):
     """Return the full detail of a single sale."""
     sale = await use_case.execute(sale_id)
+    return SaleDetailDTO.from_entity(sale)
+
+
+@router.put("/{sale_id}/lines", response_model=SaleDetailDTO, tags=["Sales"])
+async def update_sale_lines(
+    sale_id: int,
+    body: UpdateSaleLinesRequest,
+    _: UserSession = Depends(require_sales_department_or_admin),
+    use_case: IUpdateSaleLinesUseCase = Depends(get_update_sale_lines_use_case),
+):
+    """Replace all lines of a pending sale and recalculate totals."""
+    sale = await use_case.execute(
+        sale_id=sale_id,
+        lines=[line.model_dump() for line in body.lines],
+    )
     return SaleDetailDTO.from_entity(sale)
