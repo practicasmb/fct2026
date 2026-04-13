@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class SaleLineInput(BaseModel):
     product_id: int
     quantity: int = Field(gt=0)
+    discount: Decimal = Field(default=Decimal("0"), ge=0)
 
 
 class CreateSaleRequest(BaseModel):
@@ -26,9 +27,14 @@ class SaleLineResponse(BaseModel):
     product_id: int
     quantity: int
     unit_price: Decimal
+    discount: Decimal
     line_subtotal: Decimal
     vat_rate: Decimal
     line_tax: Decimal
+
+
+class UpdateSaleLinesRequest(BaseModel):
+    lines: list[SaleLineInput] = Field(min_length=1)
 
 
 class SaleDTO(BaseModel):
@@ -45,6 +51,7 @@ class SaleDetailDTO(BaseModel):
     sale_id: int
     sale_number: str
     client_id: int
+    client_name: str | None
     delivery_address: str
     user_id: int
     sale_date: datetime
@@ -62,6 +69,7 @@ class SaleDetailDTO(BaseModel):
             sale_id=sale.sale_id,
             sale_number=sale.sale_number,
             client_id=sale.client_id,
+            client_name=getattr(sale, "client_name", None),
             delivery_address=sale.delivery_address,
             user_id=sale.user_id,
             sale_date=sale.sale_date,
@@ -78,6 +86,7 @@ class SaleDetailDTO(BaseModel):
                     product_id=line.product_id,
                     quantity=line.quantity,
                     unit_price=line.unit_price,
+                    discount=line.discount,
                     line_subtotal=line.line_subtotal,
                     vat_rate=line.vat_rate,
                     line_tax=line.line_tax,
