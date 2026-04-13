@@ -5,46 +5,43 @@ from modules.sales.domain.exceptions import SaleException, SaleExceptionInfo
 from modules.sales.domain.interfaces.repositories.i_sale_repository import (
     ISaleRepository,
 )
-from modules.sales.domain.interfaces.use_cases.i_create_sale_use_case import (
-    ICreateSaleUseCase,
+from modules.sales.domain.interfaces.use_cases.i_update_sale_lines_use_case import (
+    IUpdateSaleLinesUseCase,
 )
-from shared.domain.interfaces.i_client_reader import IClientReader
 from shared.domain.interfaces.i_product_reader import IProductReader
 from shared.domain.interfaces.i_product_stock_updater import IProductStockUpdater
 
 
-class CreateSaleUseCase(ICreateSaleUseCase):
+class UpdateSaleLinesUseCase(IUpdateSaleLinesUseCase):
     def __init__(
         self,
         sale_repo: ISaleRepository,
-        client_reader: IClientReader,
         product_reader: IProductReader,
         stock_updater: IProductStockUpdater,
     ) -> None:
         self._sale_repo = sale_repo
-        self._client_reader = client_reader
         self._product_reader = product_reader
         self._stock_updater = stock_updater
 
-    async def execute(
-        self,
-        client_id: int,
-        user_id: int,
-        lines: list[dict],
-    ) -> Sale:
-        client = await self._client_reader.get_by_id(client_id)
-        if client is None:
-            raise SaleException(SaleExceptionInfo.CLIENT_NOT_FOUND)
-        if not client.is_active:
-            raise SaleException(SaleExceptionInfo.CLIENT_NOT_ACTIVE)
-
-        delivery_address = (
-            f"{client.address}, {client.city}, {client.province}, {client.postal_code}"
-        )
-
+    async def execute(self, sale_id: int, lines: list[dict]) -> Sale:
+        sale = await self._sale_repo.get_by_id(sale_id)
+        if sale is None:
+            raise SaleException(SaleExceptionInfo.SALE_NOT_FOUND)
+        if sale.status != "Pending":
+            raise SaleException(SaleExceptionInfo.SALE_NOT_PENDING)
         if not lines:
             raise SaleException(SaleExceptionInfo.EMPTY_SALE_LINES)
 
+        # Restore stock for all existing lines
+        for old_line in sale.lines:
+            product = await self._product_reader.get_by_id(old_line.product_id)
+            if product is not None:
+                await self._stock_updater.update_stock_current(
+                    old_line.product_id,
+                    product.stock_current + old_line.quantity,
+                )
+
+        # Validate and process new lines
         processed_lines: list[dict] = []
         subtotal = Decimal("0")
 
@@ -80,29 +77,17 @@ class CreateSaleUseCase(ICreateSaleUseCase):
                 }
             )
 
-        taxes = sum(pl["line_tax"] for pl in processed_lines)
-        total = subtotal + taxes
-
-        sale_number = await self._sale_repo.generate_sale_number()
-
-        sale = await self._sale_repo.create(
-            sale_number=sale_number,
-            client_id=client_id,
-            delivery_address=delivery_address,
-            user_id=user_id,
-            status="Pending",
-            subtotal=subtotal,
-            taxes=taxes,
-            total=total,
-            lines=processed_lines,
-        )
-
+        # Deduct stock for new lines
         for line, processed in zip(lines, processed_lines):
             product = await self._product_reader.get_by_id(line["product_id"])
             if product is not None:
-                new_stock = product.stock_current - processed["quantity"]
                 await self._stock_updater.update_stock_current(
-                    line["product_id"], new_stock
+                    line["product_id"],
+                    product.stock_current - processed["quantity"],
                 )
 
-        return sale
+        taxes = sum(pl["line_tax"] for pl in processed_lines)
+        total = subtotal + taxes
+
+        await self._sale_repo.replace_lines(sale_id, processed_lines)
+        return await self._sale_repo.update_totals(sale_id, subtotal, taxes, total)
