@@ -26,7 +26,7 @@ const SUPPLIER_PRODUCT_MOCK: SupplierProduct = {
   productId: 1,
   productCode: 'PROD001',
   productName: 'Test Product',
-  categoryName: null,
+  categoryName: undefined,
   supplierPrice: 100.50
 };
 
@@ -155,6 +155,9 @@ describe('Supplier Product Use Cases', () => {
       
       const invalidPriceRequest: AddSupplierProductRequest = { productId: 1, supplierPrice: 0 };
       expect(() => addProductToSupplierUseCase.execute(1, invalidPriceRequest)).toThrow(SupplierProductValidationError);
+
+      const tooManyDecimalsRequest: AddSupplierProductRequest = { productId: 1, supplierPrice: 10.123 };
+      expect(() => addProductToSupplierUseCase.execute(1, tooManyDecimalsRequest)).toThrow(SupplierProductValidationError);
     });
 
     it('should propagate repository errors', async () => {
@@ -191,6 +194,9 @@ describe('Supplier Product Use Cases', () => {
       
       const invalidPriceRequest: UpdateSupplierProductPriceRequest = { supplierPrice: 0 };
       expect(() => updateSupplierProductPriceUseCase.execute(1, 1, invalidPriceRequest)).toThrow(SupplierProductValidationError);
+
+      const tooManyDecimalsRequest: UpdateSupplierProductPriceRequest = { supplierPrice: 10.123 };
+      expect(() => updateSupplierProductPriceUseCase.execute(1, 1, tooManyDecimalsRequest)).toThrow(SupplierProductValidationError);
     });
 
     it('should propagate repository errors', async () => {
@@ -239,7 +245,7 @@ describe('Supplier Product Use Cases', () => {
       const request: ImportSupplierProductsRequest = {
         file: mockFile
       };
-      const importResult: ImportResult = { total: 2, created: 2, errors: 0, error_detail: [] };
+      const importResult: ImportResult = { total: 2, created: 2, errors: 0, errorDetail: [] };
       repo.importSupplierProducts.mockReturnValue(of(importResult));
 
       const result = await firstValueFrom(importSupplierProductsUseCase.execute(supplierId, request));
