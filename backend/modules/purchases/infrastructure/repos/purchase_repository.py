@@ -126,6 +126,7 @@ class PurchaseRepository(IPurchaseRepository, IPurchaseReader):
             user_id=user_id,
             warehouse_id=warehouse_id,
             status=status,
+            status_changed_at=datetime.now(UTC),
             subtotal=subtotal,
             taxes=taxes,
             total=total,
@@ -260,6 +261,7 @@ class PurchaseRepository(IPurchaseRepository, IPurchaseReader):
         )
         purchase = result.scalar_one()
         purchase.status = "Cancelled"
+        purchase.status_changed_at = datetime.now(UTC)
         purchase.cancelled_at = datetime.now(UTC)
         purchase.cancelled_by_user_id = user_id
         await self._db.flush()
@@ -281,6 +283,7 @@ class PurchaseRepository(IPurchaseRepository, IPurchaseReader):
         )
         purchase = result.scalar_one()
         purchase.status = new_status
+        purchase.status_changed_at = datetime.now(UTC)
         await self._db.flush()
         await self._db.refresh(purchase, ["lines"])
         return purchase
