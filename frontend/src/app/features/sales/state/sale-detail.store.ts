@@ -150,11 +150,11 @@ export class SaleDetailStore {
 
   private resolveLoadError(err: unknown): string {
     if (err instanceof SaleNotFoundError) {
-      return 'No se encontro la venta solicitada.';
+      return 'No se encontró la venta solicitada.';
     }
 
     if (err instanceof SaleUnauthorizedError) {
-      return 'Tu sesion ha expirado. Vuelve a iniciar sesion.';
+      return 'Tu sesión ha expirado. Vuelve a iniciar sesión.';
     }
 
     if (err instanceof SaleForbiddenError) {

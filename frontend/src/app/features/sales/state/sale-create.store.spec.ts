@@ -97,7 +97,7 @@ const SALE_DETAIL: SaleDetail = {
   creatorName: 'Administrador',
   status: SaleStatus.PENDING,
   allowedTransitions: [SaleStatus.APPROVED],
-  deliveryAddress: 'Direccion editada',
+  deliveryAddress: 'Dirección editada',
   saleDate: new Date('2026-04-01T10:00:00.000Z'),
   createdAt: new Date('2026-04-01T10:01:00.000Z'),
   updatedAt: new Date('2026-04-01T10:02:00.000Z'),
@@ -423,7 +423,7 @@ describe('SaleCreateStore', () => {
 
     await store.submit();
 
-    expect(store.error()).toBe('Una o varias lineas no tienen stock suficiente.');
+    expect(store.error()).toBe('Una o varias líneas no tienen stock suficiente.');
   });
   it('loads a pending sale for editing in the create form', async () => {
     await store.initializeForEdit(77);
@@ -434,7 +434,7 @@ describe('SaleCreateStore', () => {
     expect(store.editingSaleNumber()).toBe('VEN-2026-0077');
     expect(store.selectedClientId()).toBe(1);
     expect(store.selectedWarehouseId()).toBe(10);
-    expect(store.deliveryAddress()).toBe('Direccion editada');
+    expect(store.deliveryAddress()).toBe('Dirección editada');
     expect(store.lines()[0]).toMatchObject({
       productId: 100,
       quantity: 1,
@@ -450,7 +450,7 @@ describe('SaleCreateStore', () => {
 
     expect(updateSaleUseCase.execute).toHaveBeenCalledWith(77, {
       clientId: 1,
-      deliveryAddress: 'Direccion editada',
+      deliveryAddress: 'Dirección editada',
       lines: [
         {
           productId: 100,
@@ -487,7 +487,7 @@ describe('SaleCreateStore', () => {
 
   it('submits the update payload and redirects to the detail page', async () => {
     await store.initializeForEdit(77);
-    store.onDeliveryAddressChange('Nueva direccion');
+    store.onDeliveryAddressChange('Nueva dirección');
 
     const lineId = store.lines()[0].lineId;
     await store.commitLineEdit(lineId, {
@@ -501,7 +501,7 @@ describe('SaleCreateStore', () => {
 
     expect(updateSaleUseCase.execute).toHaveBeenCalledWith(77, {
       clientId: 1,
-      deliveryAddress: 'Nueva direccion',
+      deliveryAddress: 'Nueva dirección',
       lines: [
         {
           productId: 100,
@@ -535,7 +535,7 @@ describe('SaleCreateStore', () => {
       discountType: 'percent',
     });
 
-    expect(store.lineViews()[1].validationError).toBe('Este producto ya esta anadido en otra linea.');
+    expect(store.lineViews()[1].validationError).toBe('Este producto ya está añadido en otra línea.');
     expect(store.canSubmit()).toBe(false);
   });
 });
