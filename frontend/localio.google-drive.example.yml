@@ -1,0 +1,9 @@
+job:
+  format: json
+  output_path: ./src/assets/i18n
+  source:
+    path: translations.xlsx
+    sheet: 0
+    # Use direct XLSX export URL, not the pubhtml page.
+    url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQulGF41prHPOu4_uVScD_U_aMTFQX0SkmDeFST7Tg4RGD7Wsdv_kiA24wJTzyOEcUHV5fIZEtuZOz0/pub?output=xlsx"
+  default_language: es

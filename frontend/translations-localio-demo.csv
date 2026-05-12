@@ -1,0 +1,11 @@
+key,en,es
+common.app_name,My ERP,Mi ERP
+login.welcome_user,"Hello {name}!","Hola {name}!"
+notifications.unread#one,"You have {%i:count} unread message","Tienes {%i:count} mensaje sin leer"
+notifications.unread#other,"You have {%i:count} unread messages","Tienes {%i:count} mensajes sin leer"
+cart.total_price,"Total: {%.2f:total} EUR","Total: {%.2f:total} EUR"
+transfer.summary,"Move {item} from {origin} to {destination}","Desde {origin} mueve {item} a {destination}"
+legal.quote,"He said: ""Don't close this window""","Dijo: ""No cierres esta ventana"""
+paths.config,"Config path: C:\Users\{name}\AppData\Local","Ruta de config: C:\Usuarios\{name}\AppData\Local"
+messages.multiline,"First line\nSecond line\tTabbed","Primera linea\nSegunda linea\tTabulada"
+html.rich_text,"<b>{name}</b> accepted terms & conditions","<b>{name}</b> acepto terminos y condiciones"

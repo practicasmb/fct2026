@@ -1,14 +1,21 @@
-{
-    "meta" : {
-        "info": "Localizable created with localio. DO NOT MODIFY.",
-        "language": "es"
-    },
-    "translations": {
-      "___comment___": "Common",
-      "common_app_name_text": "",
-      "common_app_name_pre_text": "",
-      "common_language_code": "es",
-      "common_ejemplo_text": "Ejemplo"
-
-    }
+{
+    "meta" : {
+        "info": "Localizable created with localio. DO NOT MODIFY.",
+        "language": "es"
+    },
+    "translations": {
+      "common.app_name": "Mi ERP",
+      "login.welcome_user": "Hola {{name}}!",
+      "notifications.unread": {
+        "one": "Tienes {{count}} mensaje sin leer",
+        "other": "Tienes {{count}} mensajes sin leer"
+      },
+      "cart.total_price": "Total: {{total}} EUR",
+      "transfer.summary": "Desde {{origin}} mueve {{item}} a {{destination}}",
+      "legal.quote": "Dijo: \"No cierres esta ventana\"",
+      "paths.config": "Ruta de config: C:\\Usuarios{{name}}\\AppData\\Local",
+      "messages.multiline": "Primera linea\\nSegunda linea\\tTabulada",
+      "html.rich_text": "<b>{{name}}</b> acepto terminos y condiciones"
+
+    }
 }

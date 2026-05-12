@@ -1,14 +1,21 @@
-{
-    "meta" : {
-        "info": "Localizable created with localio. DO NOT MODIFY.",
-        "language": "en"
-    },
-    "translations": {
-      "___comment___": "Common",
-      "common_app_name_text": "",
-      "common_app_name_pre_text": "",
-      "common_language_code": "en",
-      "common_ejemplo_text": "Example"
-
-    }
+{
+    "meta" : {
+        "info": "Localizable created with localio. DO NOT MODIFY.",
+        "language": "en"
+    },
+    "translations": {
+      "common.app_name": "My ERP",
+      "login.welcome_user": "Hello {{name}}!",
+      "notifications.unread": {
+        "one": "You have {{count}} unread message",
+        "other": "You have {{count}} unread messages"
+      },
+      "cart.total_price": "Total: {{total}} EUR",
+      "transfer.summary": "Move {{item}} from {{origin}} to {{destination}}",
+      "legal.quote": "He said: \"Don't close this window\"",
+      "paths.config": "Config path: C:\\Users{{name}}\\AppData\\Local",
+      "messages.multiline": "First line\\nSecond line\\tTabbed",
+      "html.rich_text": "<b>{{name}}</b> accepted terms & conditions"
+
+    }
 }
